@@ -4,6 +4,8 @@
 
 ```
 .
+├── .github
+│   └── workflows   # GitHub Actions workflows
 ├── assets          # Static resource files
 ├── cmd             # Application entry point
 ├── internal        # Internal application logic
