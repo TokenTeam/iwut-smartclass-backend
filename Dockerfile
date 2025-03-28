@@ -1,6 +1,12 @@
 # Use the official Golang image as the base image
 FROM golang:1.20-alpine
 
+# Set environment variables
+
+ENV PORT=${PORT}
+ENV DEBUG=${DEBUG}
+ENV DATABASE=${DATABASE}
+
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
