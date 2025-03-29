@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'main'
+      - 'master'
 jobs:
   publish:
     environment: development
     name: Build and push docker image
     runs-on: ubuntu-latest
-    steps:
+    steps: 
       - name: docker setup
         uses: docker/setup-docker-action@v4.3.0
       - name: docker login
@@ -20,17 +20,24 @@ jobs:
           registry: ${{ secrets.DOCKER_REGISTRY }}
       - name: checkout
         uses: actions/checkout@v4
-      - name: list files
-        run: ls -als
       - name: docker build
         run: |
           docker build . \
+            --build-arg PORT=${{ vars.PORT }} \
+            --build-arg DEBUG=${{ vars.DEBUG }} \
+            --build-arg DATABASE=${{ secrets.DATABASE }} \
+            --build-arg TENCENT_SECRET_ID=${{ secrets.TENCENT_SECRET_ID }} \
+            --build-arg TENCENT_SECRET_KEY=${{ secrets.TENCENT_SECRET_KEY }} \
+            --build-arg BUCKET_URL=${{ secrets.BUCKET_URL }} \
+            --build-arg OPENAI_ENDPOINT=${{ vars.OPENAI_ENDPOINT }} \
+            --build-arg OPENAI_KEY=${{ secrets.OPENAI_KEY }} \
+            --build-arg OPENAI_MODEL=${{ vars.OPENAI_MODEL }} \
+            --build-arg PROMPT=${{ vars.PROMPT }} \
             --file ${{ vars.DOCKER_FILE }} --tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
       - name: docker tag
         run: docker tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }} ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
       - name: docker push
         run: docker push ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
-
   deploy:
     needs: publish
     environment: development
@@ -46,5 +53,5 @@ jobs:
         run: |
           sudo docker stop ${{ vars.DOCKER_CONTAINER_NAME }} || true
           sudo docker rm ${{ vars.DOCKER_CONTAINER_NAME }} || true
-          sudo docker run -d --name ${{ vars.DOCKER_CONTAINER_NAME }} -p ${{ vars.DOCKER_CONTAINER_PORT }}:8080 ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
+          sudo docker run -d --name ${{ vars.DOCKER_CONTAINER_NAME }} -p ${{ vars.DOCKER_CONTAINER_PORT }}:80 ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
           sudo docker logout ${{ secrets.DOCKER_REGISTRY }}
