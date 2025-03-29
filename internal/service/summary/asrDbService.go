@@ -8,15 +8,15 @@ import (
 )
 
 type AsrDbService struct {
-	Database *sql.DB
+	Service
 }
 
 // NewAsrDbService 创建实例
 func NewAsrDbService(db *sql.DB) *AsrDbService {
-	return &AsrDbService{Database: db}
+	return &AsrDbService{Service{Database: db}}
 }
 
-// GetAsr 将 ASR 内容写入数据库
+// GetAsr 从数据库读取 ASR 内容
 func (s *AsrDbService) GetAsr(subId int) (string, error) {
 	query := `SELECT asr FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)

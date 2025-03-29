@@ -127,6 +127,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			_, err = saveAsrService.SaveAsr(subId, asrText)
 
 			// 释放文件
+			middleware.Logger.Log("INFO", fmt.Sprintf("Delete file: %s", audioFileName))
 			err = cosService.DeleteFile(audioFileName)
 			if err != nil {
 				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to delete file: %s", err))
@@ -136,6 +137,25 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to delete file: %s", err))
 			}
+
+			// 生成摘要
+			summaryText, err := util.CallOpenAI(cfg, asrText)
+			if err != nil {
+				// 撤销生成状态
+				_ = generateSummaryService.WriteStatus(subId, "")
+				return
+			}
+
+			// 将摘要内容写入数据库
+			summaryDbService := summary.NewLlmDbService(db)
+			_, err = summaryDbService.SaveSummary(subId, summaryText)
+			if err != nil {
+				// 撤销生成状态
+				_ = generateSummaryService.WriteStatus(subId, "")
+				return
+			}
+
+			return
 		}()
 
 		return

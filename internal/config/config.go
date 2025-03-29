@@ -12,6 +12,10 @@ type Config struct {
 	TencentSecretId  string
 	TencentSecretKey string
 	BucketUrl        string
+	OpenaiEndpoint   string
+	OpenaiKey        string
+	OpenaiModel      string
+	Prompt           string
 }
 
 // LoadConfig 加载配置
@@ -27,6 +31,10 @@ func LoadConfig() *Config {
 	tencentSecretId := os.Getenv("TENCENT_SECRET_ID")
 	tencentSecretKey := os.Getenv("TENCENT_SECRET_KEY")
 	bucketUrl := os.Getenv("BUCKET_URL")
+	openaiEndpoint := os.Getenv("OPENAI_ENDPOINT")
+	openaiKey := os.Getenv("OPENAI_KEY")
+	openaiModel := os.Getenv("OPENAI_MODEL")
+	prompt := os.Getenv("PROMPT")
 
 	return &Config{
 		Debug:            debug,
@@ -35,5 +43,9 @@ func LoadConfig() *Config {
 		TencentSecretId:  tencentSecretId,
 		TencentSecretKey: tencentSecretKey,
 		BucketUrl:        bucketUrl,
+		OpenaiEndpoint:   openaiEndpoint,
+		OpenaiKey:        openaiKey,
+		OpenaiModel:      openaiModel,
+		Prompt:           prompt,
 	}
 }

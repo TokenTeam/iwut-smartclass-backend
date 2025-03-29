@@ -21,8 +21,15 @@ type OpenAIRequest struct {
 // OpenAIResponse 通用 OpenAI 响应结构
 type OpenAIResponse struct {
 	Choices []struct {
-		Text string `json:"text"`
+		Message struct {
+			Content string `json:"content"`
+		} `json:"message"`
 	} `json:"choices"`
+	Usage struct {
+		PromptTokens     int `json:"prompt_tokens"`
+		CompletionTokens int `json:"completion_tokens"`
+		TotalTokens      int `json:"total_tokens"`
+	} `json:"usage"`
 }
 
 // CallOpenAI 调用 OpenAI API
@@ -30,6 +37,8 @@ func CallOpenAI(cfg *config.Config, userInput string) (string, error) {
 	url := cfg.OpenaiEndpoint
 	apiKey := cfg.OpenaiKey
 	model := cfg.OpenaiModel
+
+	middleware.Logger.Log("INFO", "[OpenAI] Creating a new request")
 
 	requestBody, err := json.Marshal(OpenAIRequest{
 		Model: model,
@@ -80,6 +89,8 @@ func CallOpenAI(cfg *config.Config, userInput string) (string, error) {
 		return "", fmt.Errorf("no choices in response")
 	}
 
-	middleware.Logger.Log("DEBUG", "[OpenAI] Called API successfully")
-	return openAIResponse.Choices[0].Text, nil
+	content := openAIResponse.Choices[0].Message.Content
+	usage := openAIResponse.Usage
+	middleware.Logger.Log("INFO", fmt.Sprintf("[OpenAI] Called successfully. Usage: Prompt %d, Completion %d, Total %d", usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens))
+	return content, nil
 }
