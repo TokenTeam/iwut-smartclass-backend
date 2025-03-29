@@ -60,7 +60,7 @@ func (s *Service) Recognize(audioFilePath string) (string, error) {
 			resultText := *resultResponse.Response.Data.Result
 
 			// 使用正则表达式移除时间戳
-			re := regexp.MustCompile(`\[\d{1,2}:\d{1,2}\.\d{3},\d{1,2}:\d{1,2}\.\d{3},\d]`)
+			re := regexp.MustCompile(`\[\d{1,2}:\d{1,2}\.\d{3},\d{1,2}:\d{1,2}\.\d{3},\d]\s*`)
 			cleanedText := re.ReplaceAllString(resultText, "")
 
 			return cleanedText, nil
