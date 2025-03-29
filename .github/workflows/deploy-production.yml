@@ -12,10 +12,6 @@ jobs:
     steps:
       - name: docker setup
         uses: docker/setup-docker-action@v4.3.0
-      - name: go setup
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24'
       - name: docker login
         uses: docker/login-action@v3.4.0
         with:
@@ -24,23 +20,11 @@ jobs:
           registry: ${{ secrets.DOCKER_REGISTRY }}
       - name: checkout
         uses: actions/checkout@v4
-      - name: build go app
-        run: |
-          go mod download
-          go build -o server ./cmd
       - name: list files
         run: ls -als
       - name: docker build
         run: |
           docker build . \
-            --build-arg REPO_OWNER=${{ vars.ENV_REPO_OWNER }} \
-            --build-arg REPO_NAME=${{ vars.ENV_REPO_NAME }} \
-            --build-arg BRANCH=${{ vars.ENV_BRANCH }} \
-            --build-arg USER_NAME=${{ secrets.ENV_USER_NAME }} \
-            --build-arg PASSWORD=${{ secrets.ENV_PASSWORD }} \
-            --build-arg APP_ID=${{ secrets.ENV_APP_ID }} \
-            --build-arg APP_SECRET=${{ secrets.ENV_SECRET }} \
-            --build-arg DOTNET_ENV=${{ vars.DOTNET_ENV }} \
             --file ${{ vars.DOCKER_FILE }} --tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
       - name: docker tag
         run: docker tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }} ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
