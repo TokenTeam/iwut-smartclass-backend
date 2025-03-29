@@ -17,6 +17,6 @@ func ConvertVideoToAudio(inputFile, outputFile string) error {
 		return err
 	}
 
-	middleware.Logger.Log("INFO", fmt.Sprintf("[FFMPEG] Conversion successful: %s to %s", inputFile, outputFile))
+	middleware.Logger.Log("INFO", fmt.Sprintf("[FFMPEG] Conversion finished: %s to %s", inputFile, outputFile))
 	return nil
 }

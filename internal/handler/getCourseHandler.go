@@ -34,7 +34,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 
 	// 创建实例
 	getScheduleService := course.NewGetScheduleService(requestData.Token, requestData.Date, requestData.CourseName, middleware.Logger)
-	getCourseDBService := course.NewGetCourseDBService(db)
+	getCourseDBService := course.NewGetCourseDbService(db)
 	getLiveCourseService := course.NewGetLiveCourseService(requestData.Token, middleware.Logger)
 
 	// 获取当天课程
@@ -52,7 +52,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 尝试从数据库中获取课程数据
-	courseData, err := getCourseDBService.GetCourseDataFromDB(subId)
+	courseData, err := getCourseDBService.GetCourseDataFromDb(subId)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			// 如果数据库查询为空，则获取课程回放数据
@@ -63,8 +63,8 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 			}
 			// 将课程数据写入数据库
 			courseData := course.Course{
-				SubID:    subId,
-				CourseID: courseId,
+				SubId:    subId,
+				CourseId: courseId,
 				Name:     liveCourseData["name"].(string),
 				Teacher:  liveCourseData["teacher"].(string),
 				Location: liveCourseData["location"].(string),
@@ -73,7 +73,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				Video:    liveCourseData["video"].(string),
 				Summary:  map[string]string{"status": "", "data": ""},
 			}
-			err = getCourseDBService.SaveCourseDataToDB(courseData)
+			err = getCourseDBService.SaveCourseDataToDb(courseData)
 			if err != nil {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return

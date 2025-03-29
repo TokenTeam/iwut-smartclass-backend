@@ -2,6 +2,7 @@ package summary
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"iwut-smart-timetable-backend/internal/middleware"
@@ -10,38 +11,20 @@ import (
 	"path/filepath"
 )
 
-type Service struct {
-	Database *sql.DB
-}
-
 type ConvertVideoToAudioService struct {
-	Service *Service
+	Service
 }
 
 // NewConvertVideoToAudioService 创建实例
-func NewConvertVideoToAudioService(db *sql.DB) *Service {
-	return &Service{Database: db}
-}
-
-// WriteStatus 将状态写入数据库
-func (s *Service) WriteStatus(subId int, status string) error {
-	query := `UPDATE course SET summary_status = ? WHERE sub_id = ?`
-	_, err := s.Database.Exec(query, status, subId)
-	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database: %v", err))
-		return err
-	}
-	return nil
+func NewConvertVideoToAudioService(db *sql.DB) *ConvertVideoToAudioService {
+	return &ConvertVideoToAudioService{Service{Database: db}}
 }
 
 // Convert 将视频转换为音频文件
-func (s *Service) Convert(subId int, videoFile string) (string, error) {
-	// 写入生成状态
-	_ = s.WriteStatus(subId, "generating")
-
+func (s *ConvertVideoToAudioService) Convert(subId int, videoFile string) (string, error) {
 	// 生成音频文件名
-	audioID := uuid.New()
-	audioFileName := audioID.String() + ".aac"
+	audioID := uuid.New().String()
+	audioFileName := audioID + ".aac"
 	audioFilePath := filepath.Join("data", "audio", audioFileName)
 
 	// 创建目录
@@ -62,12 +45,37 @@ func (s *Service) Convert(subId int, videoFile string) (string, error) {
 	}
 
 	// 将 audioID 写入数据库
-	query := `UPDATE course SET audio_id = ? WHERE sub_id = ?`
-	_, err = s.Database.Exec(query, audioID.String(), subId)
+	_ = s.SaveAudioId(subId, audioID)
+
+	return audioID, nil
+}
+
+// GetAudioId 从数据库中获取 audioID
+func (s *ConvertVideoToAudioService) GetAudioId(subId int) (string, error) {
+	query := `SELECT audio_id FROM course WHERE sub_id = ?`
+	row := s.Database.QueryRow(query, subId)
+	var audioID sql.NullString
+	err := row.Scan(&audioID)
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database: %v", err))
+		if errors.Is(err, sql.ErrNoRows) {
+			middleware.Logger.Log("DEBUG", fmt.Sprintf("Could not find course data in database, subId: %d: %v", subId, err))
+			return "", fmt.Errorf("sql: no rows in result set")
+		}
 		return "", err
 	}
+	if audioID.Valid {
+		return audioID.String, nil
+	}
+	return "", nil
+}
 
-	return audioFilePath, nil
+// SaveAudioId 将 audioID 写入数据库
+func (s *ConvertVideoToAudioService) SaveAudioId(subId int, audioID string) error {
+	query := `UPDATE course SET audio_id = ? WHERE sub_id = ?`
+	_, err := s.Database.Exec(query, audioID, subId)
+	if err != nil {
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database, subId: %d: %v", subId, err))
+		return err
+	}
+	return nil
 }

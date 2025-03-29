@@ -10,21 +10,21 @@ import (
 	"time"
 )
 
-type LiveCourseService struct {
+type GetLiveCourseService struct {
 	Token  string
 	Logger *middleware.Log
 }
 
 // NewGetLiveCourseService 创建实例
-func NewGetLiveCourseService(token string, logger *middleware.Log) *LiveCourseService {
-	return &LiveCourseService{
+func NewGetLiveCourseService(token string, logger *middleware.Log) *GetLiveCourseService {
+	return &GetLiveCourseService{
 		Token:  token,
 		Logger: logger,
 	}
 }
 
 // SearchLiveCourse 查询课程回放
-func (s *LiveCourseService) SearchLiveCourse(subId, courseId int) (map[string]interface{}, error) {
+func (s *GetLiveCourseService) SearchLiveCourse(subId, courseId int) (map[string]interface{}, error) {
 	url := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/course-live/search-live-course-list?all=1&course_id=%d&sub_id=%d", courseId, subId)
 	s.Logger.Log("DEBUG", fmt.Sprintf("Sending GET request to URL: %s", url))
 

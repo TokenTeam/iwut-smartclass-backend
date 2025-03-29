@@ -106,7 +106,7 @@ func (s *ScheduleService) GetSchedules() (*ScheduleResponse, error) {
 		return nil, fmt.Errorf("%s not found", s.CourseName)
 	}
 
-	s.Logger.Log("DEBUG", fmt.Sprintf("%s found, CourseId: %s, SubId: %s", s.CourseName, filteredCourses[0].CourseID, filteredCourses[0].ID))
+	s.Logger.Log("DEBUG", fmt.Sprintf("%s found, CourseId: %s, subId: %s", s.CourseName, filteredCourses[0].CourseID, filteredCourses[0].ID))
 	return &ScheduleResponse{
 		Success: scheduleResponse.Success,
 		Result: struct {

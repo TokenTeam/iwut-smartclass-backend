@@ -8,6 +8,9 @@ RUN apk add --no-cache ffmpeg
 ENV PORT=${PORT}
 ENV DEBUG=${DEBUG}
 ENV DATABASE=${DATABASE}
+ENV TENCENT_SECRET_ID=${TENCENT_SECRET_ID}
+ENV TENCENT_SECRET_KEY=${TENCENT_SECRET_KEY}
+ENV BUCKET_URL=${BUCKET_URL}
 
 # Set the Current Working Directory inside the container
 WORKDIR /app

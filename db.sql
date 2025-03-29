@@ -8,8 +8,8 @@ CREATE TABLE `course` (
     `time` text NOT NULL,
     `video` text,
     `audio_id` text,
-    `asr` text,
+    `asr` longtext,
     `summary_status` text,
-    `summary_data` text,
+    `summary_data` longtext,
     PRIMARY KEY (`sub_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
