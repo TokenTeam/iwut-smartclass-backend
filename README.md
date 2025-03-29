@@ -9,13 +9,16 @@
 ├── assets          # Static resource files
 ├── cmd             # Application entry point
 ├── internal        # Internal application logic
+│   ├── asr         # ASR with Tencent Cloud
 │   ├── config      # Configuration files and loading logic
+│   ├── cos         # COS with Tencent Cloud
 │   ├── database    # Database related code
 │   ├── handler     # HTTP handlers
 │   ├── middleware  # Middleware
 │   ├── router      # Route definitions
 │   ├── service     # Business logic
-│   │   └── course  # Course related services
+│   │   ├── course  # Course related services
+│   │   └── summary # Summary related services
 │   └── util        # Utilities
 ```
 
@@ -65,6 +68,29 @@ Response:
       "data": "",
       "status": ""
     }
+  }
+}
+```
+
+### Generate AI Summary `POST /generateSummary`
+
+Body:
+
+```json
+{
+  "sub_id": "1111111"
+}
+```
+
+Response:
+
+```json
+{
+  "code": 200,
+  "msg": "OK",
+  "data": {
+    "sub_id": 1111111,
+    "summary_status": "generating"
   }
 }
 ```
