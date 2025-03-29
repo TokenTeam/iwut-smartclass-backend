@@ -1,6 +1,9 @@
 # Use the official Golang image as the base image
 FROM golang:1.24-alpine
 
+# Install ffmpeg
+RUN apk add --no-cache ffmpeg
+
 # Set environment variables
 ENV PORT=${PORT}
 ENV DEBUG=${DEBUG}

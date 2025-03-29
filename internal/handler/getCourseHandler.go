@@ -27,17 +27,18 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 
 	db := database.GetDB()
 	if db == nil {
-		util.WriteResponse(w, http.StatusInternalServerError, "Database not initialized")
+		middleware.Logger.Log("ERROR", "Database not initialized")
+		util.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
 	}
 
 	// 创建实例
-	scheduleService := course.NewScheduleService(requestData.Token, requestData.Date, requestData.CourseName, middleware.Logger)
-	courseService := course.NewCourseDBService(db)
-	liveCourseService := course.NewLiveCourseService(requestData.Token, middleware.Logger)
+	getScheduleService := course.NewGetScheduleService(requestData.Token, requestData.Date, requestData.CourseName, middleware.Logger)
+	getCourseDBService := course.NewGetCourseDBService(db)
+	getLiveCourseService := course.NewGetLiveCourseService(requestData.Token, middleware.Logger)
 
 	// 获取当天课程
-	scheduleData, err := scheduleService.GetSchedules()
+	scheduleData, err := getScheduleService.GetSchedules()
 	if err != nil {
 		util.WriteResponse(w, http.StatusInternalServerError, nil)
 		return
@@ -51,19 +52,19 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 尝试从数据库中获取课程数据
-	courseData, err := courseService.GetCourseDataFromDB(subId, courseId)
+	courseData, err := getCourseDBService.GetCourseDataFromDB(subId)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			// 如果数据库查询为空，则获取课程回放数据
-			liveCourseData, err := liveCourseService.SearchLiveCourse(subId, courseId)
+			liveCourseData, err := getLiveCourseService.SearchLiveCourse(subId, courseId)
 			if err != nil {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return
 			}
 			// 将课程数据写入数据库
 			courseData := course.Course{
-				CourseID: courseId,
 				SubID:    subId,
+				CourseID: courseId,
 				Name:     liveCourseData["name"].(string),
 				Teacher:  liveCourseData["teacher"].(string),
 				Location: liveCourseData["location"].(string),
@@ -72,7 +73,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				Video:    liveCourseData["video"].(string),
 				Summary:  map[string]string{"status": "", "data": ""},
 			}
-			err = courseService.SaveCourseDataToDB(courseData)
+			err = getCourseDBService.SaveCourseDataToDB(courseData)
 			if err != nil {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return

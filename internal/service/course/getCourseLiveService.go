@@ -15,8 +15,8 @@ type LiveCourseService struct {
 	Logger *middleware.Log
 }
 
-// NewLiveCourseService 创建实例
-func NewLiveCourseService(token string, logger *middleware.Log) *LiveCourseService {
+// NewGetLiveCourseService 创建实例
+func NewGetLiveCourseService(token string, logger *middleware.Log) *LiveCourseService {
 	return &LiveCourseService{
 		Token:  token,
 		Logger: logger,

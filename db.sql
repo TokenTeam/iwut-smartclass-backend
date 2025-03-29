@@ -7,6 +7,8 @@ CREATE TABLE `course` (
     `date` text NOT NULL,
     `time` text NOT NULL,
     `video` text,
+    `audio_id` text,
+    `asr` text,
     `summary_status` text,
     `summary_data` text,
     PRIMARY KEY (`sub_id`)

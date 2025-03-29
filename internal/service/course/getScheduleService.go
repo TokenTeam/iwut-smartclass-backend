@@ -32,8 +32,8 @@ type ScheduleResponse struct {
 	} `json:"result"`
 }
 
-// NewScheduleService 创建实例
-func NewScheduleService(token, date, courseName string, logger *middleware.Log) *ScheduleService {
+// NewGetScheduleService 创建实例
+func NewGetScheduleService(token, date, courseName string, logger *middleware.Log) *ScheduleService {
 	return &ScheduleService{
 		Token:      token,
 		Date:       date,

@@ -10,6 +10,7 @@ func NewRouter() *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler.Home)
 	mux.HandleFunc("/getCourse", methodHandler(handler.GetCourse, http.MethodPost))
+	mux.HandleFunc("/generateSummary", methodHandler(handler.GenerateSummary, http.MethodPost))
 	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "assets/favicon.ico")
 	})

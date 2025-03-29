@@ -24,23 +24,22 @@ type Course struct {
 	Summary  map[string]string `json:"summary"`
 }
 
-// NewCourseDBService 创建实例
-func NewCourseDBService(db *sql.DB) *Service {
+// NewGetCourseDBService 创建实例
+func NewGetCourseDBService(db *sql.DB) *Service {
 	return &Service{Database: db}
 }
 
 // GetCourseDataFromDB 从数据库中获取课程数据
-func (s *Service) GetCourseDataFromDB(SubID int, CourseID int) (Course, error) {
+func (s *Service) GetCourseDataFromDB(SubID int) (Course, error) {
 	var course Course
 	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, SubID)
 	var video sql.NullString
 	var summaryStatus, summaryData sql.NullString
-	err := row.Scan(&course.CourseID, &course.SubID, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &summaryStatus, &summaryData)
+	err := row.Scan(&course.SubID, &course.CourseID, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &summaryStatus, &summaryData)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] %v", err))
-			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, CourseId: %d, SubId: %d: %v", CourseID, SubID, err))
+			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, SubId: %d: %v", SubID, err))
 			return Course{}, fmt.Errorf("sql: no rows in result set")
 		}
 		return Course{}, err
@@ -50,7 +49,7 @@ func (s *Service) GetCourseDataFromDB(SubID int, CourseID int) (Course, error) {
 		"status": summaryStatus.String,
 		"data":   summaryData.String,
 	}
-	middleware.Logger.Log("DEBUG", fmt.Sprintf("Course data found in database, CourseId: %d, SubId: %d", CourseID, SubID))
+	middleware.Logger.Log("DEBUG", fmt.Sprintf("Course data found in database, SubId: %d", SubID))
 	return course, nil
 }
 
