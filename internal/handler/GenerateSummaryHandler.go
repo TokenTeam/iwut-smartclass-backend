@@ -2,18 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
-	"iwut-smart-timetable-backend/internal/asr"
 	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/cos"
 	"iwut-smart-timetable-backend/internal/database"
 	"iwut-smart-timetable-backend/internal/middleware"
 	"iwut-smart-timetable-backend/internal/service/course"
 	"iwut-smart-timetable-backend/internal/service/summary"
 	"iwut-smart-timetable-backend/internal/util"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 )
 
@@ -72,91 +67,25 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// (异步) 将视频转换为音频并调用ASR识别
-		go func() {
-			// 查找 audioID 是否存在
-			audioID, err := convertService.GetAudioId(subId)
-			if audioID == "" {
-				audioID, err = convertService.Convert(subId, courseData.Video)
-				if err != nil {
-					// 撤销生成状态
-					_ = generateSummaryService.WriteStatus(subId, "")
-					middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %s", err))
-					return
-				}
-			}
-
-			audioFileName := audioID + ".aac"
-			audioFilePath := filepath.Join("data", "audio", audioFileName)
-
-			// 创建 COS 任务实例
-			cosService, err := cos.NewCosService(cfg.TencentSecretId, cfg.TencentSecretKey, cfg.BucketUrl)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent COS service: %s", err))
-				return
-			}
-			err = cosService.UploadFile(audioFilePath, audioFileName)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to upload file: %s", err))
-				return
-			}
-
-			bucketFilePath := cfg.BucketUrl + "/" + audioFileName
-
-			// 创建 ASR 任务实例
-			tencentASRService, err := asr.NewTencentASRService(cfg.TencentSecretId, cfg.TencentSecretKey)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent ASR service: %s", err))
-				return
-			}
-			asrText, err := tencentASRService.Recognize(bucketFilePath)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				return
-			}
-
-			// 将 ASR 结果写入数据库
-			saveAsrService := summary.NewAsrDbService(db)
-			_, err = saveAsrService.SaveAsr(subId, asrText)
-
-			// 释放文件
-			middleware.Logger.Log("INFO", fmt.Sprintf("Delete file: %s", audioFileName))
-			err = cosService.DeleteFile(audioFileName)
-			if err != nil {
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to delete file: %s", err))
-				return
-			}
-			err = os.Remove(audioFilePath)
-			if err != nil {
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to delete file: %s", err))
-			}
-
-			// 生成摘要
-			summaryText, err := util.CallOpenAI(cfg, asrText)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				return
-			}
-
-			// 将摘要内容写入数据库
-			summaryDbService := summary.NewLlmDbService(db)
-			_, err = summaryDbService.SaveSummary(subId, summaryText)
-			if err != nil {
-				// 撤销生成状态
-				_ = generateSummaryService.WriteStatus(subId, "")
-				return
-			}
-
+		// 创建队列实例
+		summaryQueue := middleware.GetQueue("SummaryServiceQueue")
+		if summaryQueue == nil {
+			middleware.Logger.Log("ERROR", "Summary queue not initialized")
+			util.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
-		}()
+		}
+
+		// 创建任务
+		job := &summary.Job{
+			SubID:        subId,
+			VideoURL:     courseData.Video,
+			SummarySvc:   generateSummaryService,
+			ConvertSvc:   convertService,
+			AsrSvc:       summary.NewAsrDbService(db),
+			SummaryDbSvc: summary.NewLlmDbService(db),
+			Config:       cfg,
+		}
+		summaryQueue.AddJob(job)
 
 		return
 	}

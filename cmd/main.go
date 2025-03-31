@@ -9,8 +9,11 @@ import (
 )
 
 func main() {
+	// 加载配置
 	cfg := config.LoadConfig()
 	middleware.Logger = middleware.NewLogger(cfg)
+
+	// 初始化路由
 	r := router.NewRouter()
 	loggedRouter := middleware.Logger.HttpMiddleware(r)
 
@@ -21,6 +24,9 @@ func main() {
 		return
 	}
 	defer database.GetDB().Close()
+
+	// 初始化工作队列
+	middleware.InitQueues(cfg)
 
 	// 启动服务
 	middleware.Logger.Log("INFO", "Starting server on port "+cfg.Port)
