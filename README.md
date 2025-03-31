@@ -29,17 +29,25 @@
 - Go 1.23+
 - MySQL 5.7+
 
-### Build
+### Build and run
 
 ```bash
 go build -o server ./cmd
+chmod +x ./server
+./server
 ```
+
+### Configuration
+
+**Example:** [.env.example](.env.example)
+
+**Priority:** `Environment variables` > `.env`
 
 ## API Documentation
 
 ### Get Course Information `GET /getCourse`
 
-Body:
+**Body:**
 
 ```json
 {
@@ -49,7 +57,7 @@ Body:
 }
 ```
 
-Response:
+**Response:**
 
 ```json
 {
@@ -74,7 +82,7 @@ Response:
 
 ### Generate AI Summary `POST /generateSummary`
 
-Body:
+**Body:**
 
 ```json
 {
@@ -82,7 +90,7 @@ Body:
 }
 ```
 
-Response:
+**Response:**
 
 ```json
 {
