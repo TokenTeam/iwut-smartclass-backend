@@ -33,7 +33,7 @@ type OpenAIResponse struct {
 }
 
 // CallOpenAI 调用 OpenAI API
-func CallOpenAI(cfg *config.Config, userInput string) (string, error) {
+func CallOpenAI(cfg *config.Config, prompt, userInput string) (string, error) {
 	url := cfg.OpenaiEndpoint
 	apiKey := cfg.OpenaiKey
 	model := cfg.OpenaiModel
@@ -46,7 +46,7 @@ func CallOpenAI(cfg *config.Config, userInput string) (string, error) {
 			Role    string `json:"role"`
 			Content string `json:"content"`
 		}{
-			{Role: "system", Content: cfg.Prompt},
+			{Role: "system", Content: prompt},
 			{Role: "user", Content: userInput},
 		},
 	})

@@ -78,6 +78,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 		// 创建任务
 		job := &summary.Job{
 			SubID:        subId,
+			CourseName:   courseData.Name,
 			VideoURL:     courseData.Video,
 			SummarySvc:   generateSummaryService,
 			ConvertSvc:   convertService,

@@ -13,6 +13,7 @@ import (
 
 type Job struct {
 	SubID        int
+	CourseName   string
 	VideoURL     string
 	SummarySvc   *Service
 	ConvertSvc   *ConvertVideoToAudioService
@@ -80,8 +81,17 @@ func (j *Job) Execute() error {
 	_ = cosService.DeleteFile(audioFileName)
 	_ = os.Remove(audioFilePath)
 
+	// 读取提示词
+	promptTemplate, err := os.ReadFile("templates/course_summary_prompt.txt")
+	if err != nil {
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to read prompt template: %s", err))
+		_ = j.SummarySvc.WriteStatus(j.SubID, "")
+		return err
+	}
+	prompt := fmt.Sprintf(string(promptTemplate), j.CourseName)
+
 	// 生成摘要
-	summaryText, err := util.CallOpenAI(j.Config, asrText)
+	summaryText, err := util.CallOpenAI(j.Config, prompt, asrText)
 	if err != nil {
 		_ = j.SummarySvc.WriteStatus(j.SubID, "")
 		return err

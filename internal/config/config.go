@@ -20,7 +20,6 @@ type Config struct {
 	OpenaiEndpoint     string
 	OpenaiKey          string
 	OpenaiModel        string
-	Prompt             string
 }
 
 // DefaultConfig 默认配置
@@ -37,7 +36,6 @@ func DefaultConfig() *Config {
 		OpenaiEndpoint:     "",
 		OpenaiKey:          "",
 		OpenaiModel:        "",
-		Prompt:             "",
 	}
 }
 

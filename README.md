@@ -20,6 +20,7 @@
 │   │   ├── course  # Course related services
 │   │   └── summary # Summary related services
 │   └── util        # Utilities
+└── templates       # Templates
 ```
 
 ## Development
