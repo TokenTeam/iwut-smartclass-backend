@@ -28,5 +28,5 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1115/go.mod
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1133 h1:S+ZHcAfI8+ii4MfsCr41R3CdhlTsc5OddGsCfeYJdl8=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1133/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.563/go.mod h1:uom4Nvi9W+Qkom0exYiJ9VWJjXwyxtPYTkKkaLMlfE0=
-github.com/tencentyun/cos-go-sdk-v5 v0.7.64 h1:2ADzzr+hcWl4Fw44DwXe0btlVzAYkdvHQ4glUyR0+mM=
-github.com/tencentyun/cos-go-sdk-v5 v0.7.64/go.mod h1:8+hG+mQMuRP/OIS9d83syAvXvrMj9HhkND6Q1fLghw0=
+github.com/tencentyun/cos-go-sdk-v5 v0.7.65 h1:+WBbfwThfZSbxpf1Dw6fyMwyzVtWBBExqfDJ5giiR2s=
+github.com/tencentyun/cos-go-sdk-v5 v0.7.65/go.mod h1:8+hG+mQMuRP/OIS9d83syAvXvrMj9HhkND6Q1fLghw0=
