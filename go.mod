@@ -3,7 +3,7 @@ module iwut-smart-timetable-backend
 go 1.23
 
 require (
-	github.com/go-sql-driver/mysql v1.9.1
+	github.com/go-sql-driver/mysql v1.9.2
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.0.1115
