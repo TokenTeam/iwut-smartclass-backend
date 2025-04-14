@@ -32,7 +32,6 @@ jobs:
             --build-arg OPENAI_ENDPOINT="${{ vars.OPENAI_ENDPOINT }}" \
             --build-arg OPENAI_KEY="${{ secrets.OPENAI_KEY }}" \
             --build-arg OPENAI_MODEL="${{ vars.OPENAI_MODEL }}" \
-            --build-arg PROMPT="${{ vars.PROMPT }}" \
             --file "${{ vars.DOCKER_FILE }}" --tag "${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}"
       - name: docker tag
         run: docker tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }} ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
