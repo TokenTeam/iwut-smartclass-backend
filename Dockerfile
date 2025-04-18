@@ -1,8 +1,22 @@
-# Use the official Golang image as the base image
-FROM golang:1.24-alpine
+FROM golang:1.24-alpine AS builder
 
-# Install ffmpeg
 RUN apk add --no-cache ffmpeg
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -o server ./cmd
+
+FROM alpine:latest
+
+RUN apk add --no-cache ffmpeg
+
+WORKDIR /app
+
+COPY --from=builder /app/server .
 
 ARG PORT
 ARG DEBUG
@@ -14,7 +28,6 @@ ARG OPENAI_ENDPOINT
 ARG OPENAI_KEY
 ARG OPENAI_MODEL
 
-# Set environment variables
 ENV PORT=${PORT}
 ENV DEBUG=${DEBUG}
 ENV DATABASE=${DATABASE}
@@ -25,23 +38,6 @@ ENV OPENAI_ENDPOINT=${OPENAI_ENDPOINT}
 ENV OPENAI_KEY=${OPENAI_KEY}
 ENV OPENAI_MODEL=${OPENAI_MODEL}
 
-# Set the Current Working Directory inside the container
-WORKDIR /app
-
-# Copy go.mod and go.sum files
-COPY go.mod go.sum ./
-
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
-
-# Copy the source from the current directory to the Working Directory inside the container
-COPY . .
-
-# Build the Go app
-RUN go build -o server ./cmd
-
-# Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Command to run the executable
 CMD ["./server"]
