@@ -100,7 +100,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 
 	// 将视频密钥拼接在视频链接后
 	if courseData.Video != "" && videoAuthKey != "" {
-		courseData.Video = fmt.Sprintf("%s&auth_key=%s", courseData.Video, videoAuthKey)
+		courseData.Video = fmt.Sprintf("%s?auth_key=%s", courseData.Video, videoAuthKey)
 	}
 
 	middleware.Logger.Log("INFO", fmt.Sprintf("GetCourse: CourseName=%s, CourseId=%d, SubId=%d", requestData.CourseName, courseId, subId))
