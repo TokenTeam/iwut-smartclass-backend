@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.0.1115
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1133
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1146
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.64
 )
 
