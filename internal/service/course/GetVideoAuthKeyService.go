@@ -1,11 +1,14 @@
 package course
 
 import (
+	"crypto/md5"
 	"fmt"
 	"io"
 	"iwut-smart-timetable-backend/internal/middleware"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -13,24 +16,26 @@ type GetVideoAuthKeyService struct {
 	Token    string
 	CourseId int
 	SubId    int
+	Video    string
 	Logger   *middleware.Log
 }
 
 // NewGetVideoAuthKeyService 创建实例
-func NewGetVideoAuthKeyService(token string, courseId, subId int, logger *middleware.Log) *GetVideoAuthKeyService {
+func NewGetVideoAuthKeyService(token string, courseId, subId int, video string, logger *middleware.Log) *GetVideoAuthKeyService {
 	return &GetVideoAuthKeyService{
 		Token:    token,
 		CourseId: courseId,
 		SubId:    subId,
+		Video:    video,
 		Logger:   logger,
 	}
 }
 
-// GetVideoAuthKey 获取视频认证密钥
+// GetVideoAuthKey 获取视频认证参数
 func (s *GetVideoAuthKeyService) GetVideoAuthKey() (string, error) {
-	url := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/course-live/search-live-course-list?all=1&course_id=%d&sub_id=%d&token=%s", s.CourseId, s.SubId, s.Token)
+	authKeyUrl := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/course-live/search-live-course-list?all=1&course_id=%d&sub_id=%d&token=%s", s.CourseId, s.SubId, s.Token)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", authKeyUrl, nil)
 	if err != nil {
 		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to create request: %v", err))
 		return "", fmt.Errorf("failed to create request: %v", err)
@@ -66,5 +71,24 @@ func (s *GetVideoAuthKeyService) GetVideoAuthKey() (string, error) {
 
 	authKey := string(matches[1])
 	s.Logger.Log("DEBUG", fmt.Sprintf("auth_key found, CourseId: %s, SubId: %s, AuthKey: %s", s.CourseId, s.SubId, authKey))
-	return authKey, nil
+
+	// 处理视频链接
+	parsedURL, err := url.Parse(s.Video)
+	if err != nil {
+		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to parse video URL: %v", err))
+		return "", fmt.Errorf("failed to parse video URL: %v", err)
+	}
+
+	// 通过 md5 计算 k
+	d := parsedURL.Path
+	r := strconv.Itoa(s.SubId)
+	o := strconv.Itoa(223)
+	h := "13110081151"
+	f := strconv.FormatInt(time.Now().Unix(), 10)
+	md5Input := d + r + o + h + f
+	md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(md5Input)))
+
+	key := "auth_key=" + authKey + "&k=" + r + "-" + f + md5Hash
+
+	return key, nil
 }
