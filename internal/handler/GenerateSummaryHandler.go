@@ -15,7 +15,8 @@ import (
 // GenerateSummary 创建 AI 课程总结
 func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
-		SubId int `json:"sub_id"`
+		SubId int    `json:"sub_id"`
+		Token string `json:"token"`
 	}
 
 	cfg := config.LoadConfig()
@@ -77,7 +78,9 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 
 		// 创建任务
 		job := &summary.Job{
+			Token:        requestData.Token,
 			SubID:        subId,
+			CourseID:     courseData.CourseId,
 			CourseName:   courseData.Name,
 			VideoURL:     courseData.Video,
 			SummarySvc:   generateSummaryService,

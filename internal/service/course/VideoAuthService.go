@@ -22,11 +22,10 @@ type VideoAuthService struct {
 }
 
 // NewVideoAuthService 创建实例
-func NewVideoAuthService(token string, courseId, subId int, video string, logger *middleware.Log) *VideoAuthService {
+func NewVideoAuthService(token string, courseId int, video string, logger *middleware.Log) *VideoAuthService {
 	return &VideoAuthService{
 		Token:    token,
 		CourseId: courseId,
-		SubId:    subId,
 		Video:    video,
 		Logger:   logger,
 	}

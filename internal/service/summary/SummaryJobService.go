@@ -6,13 +6,16 @@ import (
 	"iwut-smart-timetable-backend/internal/config"
 	"iwut-smart-timetable-backend/internal/cos"
 	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smart-timetable-backend/internal/service/course"
 	"iwut-smart-timetable-backend/internal/util"
 	"os"
 	"path/filepath"
 )
 
 type Job struct {
+	Token        string
 	SubID        int
+	CourseID     int
 	CourseName   string
 	VideoURL     string
 	SummarySvc   *Service
@@ -24,10 +27,22 @@ type Job struct {
 
 // Execute 实现 Job 接口的方法
 func (j *Job) Execute() error {
+	// 获取视频密钥
+	videoAuthService := course.NewVideoAuthService(j.Token, j.CourseID, j.VideoURL, middleware.Logger)
+	videoAuth, err := videoAuthService.VideoAuth()
+	if err != nil {
+		_ = j.SummarySvc.WriteStatus(j.SubID, "")
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to get video auth_key: %s", err))
+		return err
+	}
+
+	// 拼接带密钥的视频链接
+	video := fmt.Sprintf("%s?%s", j.VideoURL, videoAuth)
+
 	// 将视频转换为音频
 	audioID, err := j.ConvertSvc.GetAudioId(j.SubID)
 	if audioID == "" {
-		audioID, err = j.ConvertSvc.Convert(j.SubID, j.VideoURL)
+		audioID, err = j.ConvertSvc.Convert(j.SubID, video)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, "")
 			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %s", err))
