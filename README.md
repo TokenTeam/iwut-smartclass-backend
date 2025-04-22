@@ -87,7 +87,8 @@ chmod +x ./server
 
 ```json
 {
-  "sub_id": "1111111"
+  "sub_id": "1111111",
+  "token": "eyXX"
 }
 ```
 
