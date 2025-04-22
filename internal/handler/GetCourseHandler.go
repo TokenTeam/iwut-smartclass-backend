@@ -91,15 +91,15 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 	// 将视频密钥拼接在视频链接后
 	if courseData.Video != "" {
 		// 创建实例
-		getVideoAuthKeyService := course.NewGetVideoAuthKeyService(requestData.Token, courseId, subId, courseData.Video, middleware.Logger)
+		videoAuthService := course.NewVideoAuthService(requestData.Token, courseId, subId, courseData.Video, middleware.Logger)
 
 		// 获取视频密钥
-		videoAuthKey, err := getVideoAuthKeyService.GetVideoAuthKey()
+		videoAuth, err := videoAuthService.VideoAuth()
 		if err != nil {
 			util.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
 		}
-		courseData.Video = fmt.Sprintf("%s?%s", courseData.Video, videoAuthKey)
+		courseData.Video = fmt.Sprintf("%s?%s", courseData.Video, videoAuth)
 	}
 
 	middleware.Logger.Log("INFO", fmt.Sprintf("GetCourse: CourseName=%s, CourseId=%d, SubId=%d", requestData.CourseName, courseId, subId))
