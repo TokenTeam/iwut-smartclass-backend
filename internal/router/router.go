@@ -1,6 +1,7 @@
 package router
 
 import (
+	"iwut-smart-timetable-backend/assets"
 	"iwut-smart-timetable-backend/internal/handler"
 	"iwut-smart-timetable-backend/internal/util"
 	"net/http"
@@ -11,9 +12,9 @@ func NewRouter() *http.ServeMux {
 	mux.HandleFunc("/", handler.Home)
 	mux.HandleFunc("/getCourse", methodHandler(handler.GetCourse, http.MethodPost))
 	mux.HandleFunc("/generateSummary", methodHandler(handler.GenerateSummary, http.MethodPost))
-	mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "assets/favicon.ico")
-	})
+
+	fileSystem, _ := assets.GetFileSystem()
+	mux.Handle("/favicon.ico", http.FileServer(fileSystem))
 	return mux
 }
 

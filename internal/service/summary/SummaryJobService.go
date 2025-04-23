@@ -2,6 +2,7 @@ package summary
 
 import (
 	"fmt"
+	"iwut-smart-timetable-backend/assets"
 	"iwut-smart-timetable-backend/internal/asr"
 	"iwut-smart-timetable-backend/internal/config"
 	"iwut-smart-timetable-backend/internal/cos"
@@ -97,7 +98,7 @@ func (j *Job) Execute() error {
 	_ = os.Remove(audioFilePath)
 
 	// 读取提示词
-	promptTemplate, err := os.ReadFile("templates/course_summary_prompt.txt")
+	promptTemplate, err := assets.GetAssets("assets/templates/course_summary_prompt.txt")
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to read prompt template: %s", err))
 		_ = j.SummarySvc.WriteStatus(j.SubID, "")

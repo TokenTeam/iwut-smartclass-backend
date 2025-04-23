@@ -14,7 +14,7 @@ RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 
-COPY --from=builder /app/. .
+COPY --from=builder /app/server .
 
 ARG PORT
 ARG DEBUG
