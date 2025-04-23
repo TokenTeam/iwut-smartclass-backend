@@ -80,12 +80,10 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return
 			}
-			middleware.Logger.Log("INFO", fmt.Sprintf("GetCourse: CourseName: %s, CourseId: %d, SubId: %d", requestData.CourseName, courseId, subId))
-			util.WriteResponse(w, http.StatusOK, courseData)
+		} else {
+			util.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
 		}
-		util.WriteResponse(w, http.StatusInternalServerError, nil)
-		return
 	}
 
 	// 将视频密钥拼接在视频链接后
