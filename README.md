@@ -5,22 +5,23 @@
 ```
 .
 ├── .github
-│   └── workflows   # GitHub Actions workflows
-├── assets          # Static resource files
-├── cmd             # Application entry point
-├── internal        # Internal application logic
-│   ├── asr         # ASR with Tencent Cloud
-│   ├── config      # Configuration files and loading logic
-│   ├── cos         # COS with Tencent Cloud
-│   ├── database    # Database related code
-│   ├── handler     # HTTP handlers
-│   ├── middleware  # Middleware
-│   ├── router      # Route definitions
-│   ├── service     # Business logic
-│   │   ├── course  # Course related services
-│   │   └── summary # Summary related services
-│   └── util        # Utilities
-└── templates       # Templates
+│   └── workflows      # GitHub Actions workflows
+├── assets
+│   └── assets         # Static resource files
+│       └── templates  # Templates
+├── cmd                # Application entry point
+└── internal           # Internal application logic
+    ├── asr            # ASR with Tencent Cloud
+    ├── config         # Configuration files loading logic
+    ├── cos            # COS with Tencent Cloud
+    ├── database       # Database related code
+    ├── handler        # HTTP handlers
+    ├── middleware     # Middleware
+    ├── router         # Route definitions
+    ├── service        # Business logic
+    │   ├── course     # Course related services
+    │   └── summary    # Summary related services
+    └── util           # Utilities
 ```
 
 ## Development
