@@ -1,7 +1,5 @@
 FROM golang:1.24-alpine AS builder
 
-RUN apk add --no-cache ffmpeg
-
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -16,7 +14,7 @@ RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 
-COPY --from=builder /app/server .
+COPY --from=builder /app/. .
 
 ARG PORT
 ARG DEBUG
