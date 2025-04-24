@@ -50,11 +50,11 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 创建实例
-	getCourseDBService := course.NewGetCourseDbService(db)
+	courseDBService := course.NewCourseDbService(db)
 	getLiveCourseService := course.NewGetLiveCourseService(requestData.Token, middleware.Logger)
 
 	// 尝试从数据库中获取课程数据
-	courseData, err := getCourseDBService.GetCourseDataFromDb(subId)
+	courseData, err := courseDBService.GetCourseDataFromDb(subId)
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
 			// 如果数据库查询为空，则获取课程回放数据
@@ -63,8 +63,9 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return
 			}
+
 			// 将课程数据写入数据库
-			courseData := course.Course{
+			courseData = course.Course{
 				SubId:    subId,
 				CourseId: courseId,
 				Name:     liveCourseData["name"].(string),
@@ -75,7 +76,8 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				Video:    liveCourseData["video"].(string),
 				Summary:  map[string]string{"status": "", "data": ""},
 			}
-			err = getCourseDBService.SaveCourseDataToDb(courseData)
+
+			err = courseDBService.SaveCourseDataToDb(courseData)
 			if err != nil {
 				util.WriteResponse(w, http.StatusInternalServerError, nil)
 				return
@@ -84,6 +86,22 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 			util.WriteResponse(w, http.StatusInternalServerError, nil)
 			return
 		}
+	} else if courseData.Video == "" {
+		// 如果视频为空，尝试再次获取
+		liveCourseData, err := getLiveCourseService.SearchLiveCourse(subId, courseId)
+		if err != nil {
+			util.WriteResponse(w, http.StatusInternalServerError, nil)
+			return
+		}
+
+		// 更新视频链接
+		videoURL := liveCourseData["video"].(string)
+		err = courseDBService.SaveVideo(subId, videoURL)
+		if err != nil {
+			util.WriteResponse(w, http.StatusInternalServerError, nil)
+			return
+		}
+		courseData.Video = videoURL
 	}
 
 	// 将视频密钥拼接在视频链接后
