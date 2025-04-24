@@ -36,7 +36,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 
 	// 创建实例
 	generateSummaryService := summary.NewGenerateSummaryService(db)
-	getCourseDBService := course.NewGetCourseDbService(db)
+	getCourseDBService := course.NewCourseDbService(db)
 	convertService := summary.NewConvertVideoToAudioService(db)
 
 	// 尝试从数据库中获取课程数据

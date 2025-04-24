@@ -8,7 +8,7 @@ import (
 	"iwut-smart-timetable-backend/internal/middleware"
 )
 
-type GetCourseDbService struct {
+type CourseDbService struct {
 	Database *sql.DB
 }
 
@@ -24,13 +24,13 @@ type Course struct {
 	Summary  map[string]string `json:"summary"`
 }
 
-// NewGetCourseDbService 创建实例
-func NewGetCourseDbService(db *sql.DB) *GetCourseDbService {
-	return &GetCourseDbService{Database: db}
+// NewCourseDbService 创建实例
+func NewCourseDbService(db *sql.DB) *CourseDbService {
+	return &CourseDbService{Database: db}
 }
 
 // GetCourseDataFromDb 从数据库中获取课程数据
-func (s *GetCourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
+func (s *CourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
 	var course Course
 	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
@@ -54,7 +54,7 @@ func (s *GetCourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
 }
 
 // SaveCourseDataToDb 将课程数据写入数据库
-func (s *GetCourseDbService) SaveCourseDataToDb(course Course) error {
+func (s *CourseDbService) SaveCourseDataToDb(course Course) error {
 	query := `INSERT INTO course (sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	_, err := s.Database.Exec(query, course.SubId, course.CourseId, course.Name, course.Teacher, course.Location, course.Date, course.Time, course.Video, course.Summary["status"], course.Summary["data"])
 	if err != nil {
@@ -63,5 +63,16 @@ func (s *GetCourseDbService) SaveCourseDataToDb(course Course) error {
 		return err
 	}
 	middleware.Logger.Log("DEBUG", fmt.Sprintf("Write course data to database, CourseId: %d, subId: %d", course.CourseId, course.SubId))
+	return nil
+}
+
+// SaveVideo 将 Video 内容写入数据库
+func (s *CourseDbService) SaveVideo(subId int, video string) error {
+	query := `UPDATE course SET video = ? WHERE sub_id = ?`
+	_, err := s.Database.Exec(query, video, subId)
+	if err != nil {
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database, subId: %d: %v", subId, err))
+		return err
+	}
 	return nil
 }
