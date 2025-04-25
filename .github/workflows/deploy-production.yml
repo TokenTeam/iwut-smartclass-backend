@@ -5,37 +5,11 @@ on:
     branches:
       - 'main'
 jobs:
-  launch:
-    environment: production
-    name: Launch EC2 build instance
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_ACCESS_SECRET_ID }}
-          aws-region: ${{ secrets.AWS_REGION }}
-      - name: Launch EC2 instance
-        run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.AWS_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.AWS_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }}
-          echo "INSTANCE_IP=$(aws ec2 describe-instances --instance-ids ${{ secrets.AWS_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }} --query "Reservations[0].Instances[0].PublicIpAddress" --output text)" >> $GITHUB_ENV
-      - name: Wait for SSH
-        run: |
-          while ! nc -z ${{ env.INSTANCE_IP }} 22; do
-            echo "Waiting for SSH..."
-            sleep 5
-          done
   publish:
-    needs: launch
     environment: production
     name: Build and push docker image
-    runs-on: aws-01_builder
-    steps:
-      - name: register job
-        run: |
-          curl http://127.0.0.1:8080/Action/SetAction?task=${{ github.run_id }}
+    runs-on: ubuntu-latest
+    steps: 
       - name: docker setup
         uses: docker/setup-docker-action@v4.3.0
       - name: docker login
@@ -63,9 +37,6 @@ jobs:
         run: docker tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }} ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
       - name: docker push
         run: docker push ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
-      - name: unregister job
-        run: |
-          curl http://127.0.0.1:8080/Action/StopAction?task=${{ github.run_id }}
   deploy:
     needs: publish
     environment: production
