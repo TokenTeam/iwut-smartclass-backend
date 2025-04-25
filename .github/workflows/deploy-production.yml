@@ -23,15 +23,6 @@ jobs:
       - name: docker build
         run: |
           docker build . \
-            --build-arg PORT="${{ vars.PORT }}" \
-            --build-arg DEBUG="${{ vars.DEBUG }}" \
-            --build-arg DATABASE="${{ secrets.DATABASE }}" \
-            --build-arg TENCENT_SECRET_ID="${{ secrets.TENCENT_SECRET_ID }}" \
-            --build-arg TENCENT_SECRET_KEY="${{ secrets.TENCENT_SECRET_KEY }}" \
-            --build-arg BUCKET_URL="${{ secrets.BUCKET_URL }}" \
-            --build-arg OPENAI_ENDPOINT="${{ vars.OPENAI_ENDPOINT }}" \
-            --build-arg OPENAI_KEY="${{ secrets.OPENAI_KEY }}" \
-            --build-arg OPENAI_MODEL="${{ vars.OPENAI_MODEL }}" \
             --file "${{ vars.DOCKER_FILE }}" --tag "${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}"
       - name: docker tag
         run: docker tag ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }} ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
@@ -52,5 +43,16 @@ jobs:
         run: |
           sudo docker stop ${{ vars.DOCKER_CONTAINER_NAME }} || true
           sudo docker rm ${{ vars.DOCKER_CONTAINER_NAME }} || true
-          sudo docker run -d --name ${{ vars.DOCKER_CONTAINER_NAME }} -p ${{ vars.DOCKER_CONTAINER_PORT }}:8080 ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
+          sudo docker run -d --name ${{ vars.DOCKER_CONTAINER_NAME }} \
+            -p ${{ vars.DOCKER_CONTAINER_PORT }}:8080 \
+            -e PORT="${{ vars.PORT }}" \
+            -e DEBUG="${{ vars.DEBUG }}" \
+            -e DATABASE="${{ secrets.DATABASE }}" \
+            -e TENCENT_SECRET_ID="${{ secrets.TENCENT_SECRET_ID }}" \
+            -e TENCENT_SECRET_KEY="${{ secrets.TENCENT_SECRET_KEY }}" \
+            -e BUCKET_URL="${{ secrets.BUCKET_URL }}" \
+            -e OPENAI_ENDPOINT="${{ vars.OPENAI_ENDPOINT }}" \
+            -e OPENAI_KEY="${{ secrets.OPENAI_KEY }}" \
+            -e OPENAI_MODEL="${{ vars.OPENAI_MODEL }}" \
+            ${{ secrets.DOCKER_REGISTRY }}/${{ vars.DOCKER_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.run_id }}
           sudo docker logout ${{ secrets.DOCKER_REGISTRY }}
