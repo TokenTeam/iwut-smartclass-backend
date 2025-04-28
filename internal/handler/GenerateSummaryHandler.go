@@ -17,6 +17,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
 		SubId int    `json:"sub_id"`
 		Token string `json:"token"`
+		Task  string `json:"task"`
 	}
 
 	cfg := config.LoadConfig()
@@ -80,6 +81,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 		job := &summary.Job{
 			Token:        requestData.Token,
 			SubID:        subId,
+			Task:         requestData.Task,
 			CourseID:     courseData.CourseId,
 			CourseName:   courseData.Name,
 			VideoURL:     courseData.Video,
