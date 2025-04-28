@@ -89,7 +89,8 @@ chmod +x ./server
 ```json
 {
   "sub_id": "1111111",
-  "token": "eyXX"
+  "token": "eyXX",
+  "task": "new"
 }
 ```
 
