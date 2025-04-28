@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/config"
+	"iwut-smartclass-backend/internal/middleware"
 	"net/http"
 )
 

@@ -2,16 +2,25 @@ package main
 
 import (
 	"fmt"
-	"iwut-smart-timetable-backend/assets"
-	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/database"
-	"iwut-smart-timetable-backend/internal/middleware"
-	"iwut-smart-timetable-backend/internal/router"
+	"iwut-smartclass-backend/assets"
+	"iwut-smartclass-backend/internal/config"
+	"iwut-smartclass-backend/internal/database"
+	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/router"
 	"net/http"
 	"strings"
 )
 
 func main() {
+	fmt.Println(`
+	  _____                      _     _____ _
+	 / ____|                    | |   / ____| |
+	| (___  _ __ ___   __ _ _ __| |_ | |    | | __ _ ___ ___
+	 \___ \| '_ ' _ \ / _' | '__| __|| |    | |/ _' / __/ __|
+	 ____) | | | | | | (_| | |  | |_ | |____| | (_| \__ \__ \
+	|_____/|_| |_| |_|\__,_|_|   \__| \_____|_|\__,_|___/___/
+	`)
+
 	// 加载配置
 	cfg := config.LoadConfig()
 	middleware.Logger = middleware.NewLogger(cfg)

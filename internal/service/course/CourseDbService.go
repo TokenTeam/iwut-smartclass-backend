@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/middleware"
 )
 
 type CourseDbService struct {

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"iwut-smart-timetable-backend/internal/util"
+	"iwut-smartclass-backend/internal/util"
 	"net/http"
 )
 

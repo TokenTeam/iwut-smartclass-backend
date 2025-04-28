@@ -2,13 +2,13 @@ package summary
 
 import (
 	"fmt"
-	"iwut-smart-timetable-backend/assets"
-	"iwut-smart-timetable-backend/internal/asr"
-	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/cos"
-	"iwut-smart-timetable-backend/internal/middleware"
-	"iwut-smart-timetable-backend/internal/service/course"
-	"iwut-smart-timetable-backend/internal/util"
+	"iwut-smartclass-backend/assets"
+	"iwut-smartclass-backend/internal/asr"
+	"iwut-smartclass-backend/internal/config"
+	"iwut-smartclass-backend/internal/cos"
+	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/service/course"
+	"iwut-smartclass-backend/internal/util"
 	"os"
 	"path/filepath"
 )

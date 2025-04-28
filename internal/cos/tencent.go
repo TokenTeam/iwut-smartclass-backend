@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/tencentyun/cos-go-sdk-v5"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/middleware"
 	"net/http"
 	"net/url"
 )

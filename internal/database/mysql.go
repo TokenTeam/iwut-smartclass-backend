@@ -5,8 +5,8 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"io"
-	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/config"
+	"iwut-smartclass-backend/internal/middleware"
 	"os"
 	"time"
 )

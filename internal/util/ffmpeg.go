@@ -2,7 +2,7 @@ package util
 
 import (
 	"fmt"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/middleware"
 	"os/exec"
 )
 

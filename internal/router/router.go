@@ -1,9 +1,9 @@
 package router
 
 import (
-	"iwut-smart-timetable-backend/assets"
-	"iwut-smart-timetable-backend/internal/handler"
-	"iwut-smart-timetable-backend/internal/util"
+	"iwut-smartclass-backend/assets"
+	"iwut-smartclass-backend/internal/handler"
+	"iwut-smartclass-backend/internal/util"
 	"net/http"
 )
 

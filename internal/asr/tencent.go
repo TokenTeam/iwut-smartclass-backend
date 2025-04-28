@@ -5,7 +5,7 @@ import (
 	asr "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr/v20190614"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/middleware"
 	"regexp"
 	"time"
 )

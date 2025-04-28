@@ -3,7 +3,7 @@ package summary
 import (
 	"database/sql"
 	"fmt"
-	"iwut-smart-timetable-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/middleware"
 )
 
 type LlmDbService struct {

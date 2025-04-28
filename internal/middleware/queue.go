@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"iwut-smart-timetable-backend/internal/config"
+	"iwut-smartclass-backend/internal/config"
 	"sync"
 	"time"
 )

@@ -2,12 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"iwut-smart-timetable-backend/internal/config"
-	"iwut-smart-timetable-backend/internal/database"
-	"iwut-smart-timetable-backend/internal/middleware"
-	"iwut-smart-timetable-backend/internal/service/course"
-	"iwut-smart-timetable-backend/internal/service/summary"
-	"iwut-smart-timetable-backend/internal/util"
+	"iwut-smartclass-backend/internal/config"
+	"iwut-smartclass-backend/internal/database"
+	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/service/course"
+	"iwut-smartclass-backend/internal/service/summary"
+	"iwut-smartclass-backend/internal/util"
 	"net/http"
 	"strconv"
 )

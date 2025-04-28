@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
-	"iwut-smart-timetable-backend/internal/middleware"
-	"iwut-smart-timetable-backend/internal/util"
+	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/util"
 	"os"
 	"path/filepath"
 )

@@ -1,4 +1,4 @@
-module iwut-smart-timetable-backend
+module iwut-smartclass-backend
 
 go 1.23
 
