@@ -85,7 +85,7 @@ func (j *Job) Execute() error {
 			return err
 		}
 
-		asrText, err := tencentASRService.Recognize(bucketFilePath)
+		asrText, err = tencentASRService.Recognize(bucketFilePath)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
 			return err
@@ -108,7 +108,8 @@ func (j *Job) Execute() error {
 		status = "finished"
 
 		// 读取 ASR 结果
-		asrText, err := j.AsrSvc.GetAsr(j.SubID)
+		var err error
+		asrText, err = j.AsrSvc.GetAsr(j.SubID)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
 			return err
