@@ -2,10 +2,10 @@ package course
 
 import (
 	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"io"
 	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/service/user"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -40,10 +40,14 @@ func (s *VideoAuthService) VideoAuth() (string, error) {
 		return "", fmt.Errorf("failed to get auth_key: %v", err)
 	}
 
-	id, phone, err := s.GetUserInfo()
+	// 创建实例
+	userInfoService := user.NewGetUserInfoService(s.Token, s.Logger)
+
+	// 获取用户信息
+	userInfo, err := userInfoService.GetUserInfo()
 	if err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to get phone: %v", err))
-		return "", fmt.Errorf("failed to get phone: %v", err)
+		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to get UserInfo: %v", err))
+		return "", fmt.Errorf("failed to get UserInfo: %v", err)
 	}
 
 	// 处理视频链接
@@ -54,15 +58,15 @@ func (s *VideoAuthService) VideoAuth() (string, error) {
 	}
 
 	// 反转 phone
-	runes := []rune(phone)
+	runes := []rune(userInfo.Phone)
 	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
 		runes[i], runes[j] = runes[j], runes[i]
 	}
 
 	// 通过 md5 计算 k
 	d := parsedURL.Path
-	r := strconv.Itoa(id)
-	o := strconv.Itoa(223)
+	r := strconv.Itoa(userInfo.Id)
+	o := strconv.Itoa(userInfo.TenantId)
 	h := string(runes)
 	f := strconv.FormatInt(time.Now().Unix(), 10)
 	md5Input := d + r + o + h + f
@@ -116,63 +120,4 @@ func (s *VideoAuthService) GetVideoAuthKey() (string, error) {
 	s.Logger.Log("DEBUG", fmt.Sprintf("auth_key found, CourseId: %d, SubId: %d, AuthKey: %s", s.CourseId, s.SubId, authKey))
 
 	return authKey, nil
-}
-
-// GetUserInfo 获取用户信息
-func (s *VideoAuthService) GetUserInfo() (int, string, error) {
-	userInfoUrl := "https://classroom.lgzk.whut.edu.cn/userapi/v1/infosimple"
-	s.Logger.Log("DEBUG", fmt.Sprintf("Sending GET request to URL: %s", userInfoUrl))
-
-	req, err := http.NewRequest("GET", userInfoUrl, nil)
-	if err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to create request: %v", err))
-		return 0, "", fmt.Errorf("failed to create request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+s.Token)
-
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to send request: %v", err))
-		return 0, "", fmt.Errorf("failed to send request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Received non-200 response code: %d", resp.StatusCode))
-		return 0, "", fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to read response body: %v", err))
-		return 0, "", fmt.Errorf("failed to read response body: %v", err)
-	}
-
-	var response struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
-		Params  struct {
-			Id    int    `json:"id"`
-			Phone string `json:"phone"`
-		} `json:"params"`
-	}
-
-	if err := json.Unmarshal(body, &response); err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to unmarshal JSON response: %v", err))
-		return 0, "", fmt.Errorf("failed to unmarshal JSON response: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Received non-200 response code: %d", resp.StatusCode))
-		return 0, "", fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
-	}
-
-	id := response.Params.Id
-	s.Logger.Log("DEBUG", fmt.Sprintf("id found, CourseId: %d, SubId: %d, Id: %d", s.CourseId, s.SubId, id))
-	phone := response.Params.Phone
-	s.Logger.Log("DEBUG", fmt.Sprintf("phone found, CourseId: %d, SubId: %d, Phone: %s", s.CourseId, s.SubId, phone))
-
-	return id, phone, nil
 }
