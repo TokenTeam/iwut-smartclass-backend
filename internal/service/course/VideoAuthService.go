@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"iwut-smartclass-backend/internal/config"
 	"iwut-smartclass-backend/internal/middleware"
 	"iwut-smartclass-backend/internal/service/user"
 	"net/http"
@@ -80,7 +81,7 @@ func (s *VideoAuthService) VideoAuth() (string, error) {
 
 // GetVideoAuthKey 获取视频认证参数
 func (s *VideoAuthService) GetVideoAuthKey() (string, error) {
-	authKeyUrl := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/course-live/search-live-course-list?all=1&course_id=%d&sub_id=%d&token=%s", s.CourseId, s.SubId, s.Token)
+	authKeyUrl := fmt.Sprintf("%s?all=1&course_id=%d&sub_id=%d&token=%s", config.LoadConfig().SearchLiveCourseList, s.CourseId, s.SubId, s.Token)
 
 	req, err := http.NewRequest("GET", authKeyUrl, nil)
 	if err != nil {

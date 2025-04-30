@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iwut-smartclass-backend/internal/config"
 	"iwut-smartclass-backend/internal/middleware"
 	"net/http"
 	"time"
@@ -31,7 +32,7 @@ func NewGetUserInfoService(token string, logger *middleware.Log) *GetUserInfoSer
 
 // GetUserInfo 获取用户信息
 func (s *GetUserInfoService) GetUserInfo() (UserInfo, error) {
-	userInfoUrl := "https://classroom.lgzk.whut.edu.cn/userapi/v1/infosimple"
+	userInfoUrl := config.LoadConfig().InfoSimple
 	s.Logger.Log("DEBUG", fmt.Sprintf("Sending GET request to URL: %s", userInfoUrl))
 
 	req, err := http.NewRequest("GET", userInfoUrl, nil)

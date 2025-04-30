@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iwut-smartclass-backend/internal/config"
 	"iwut-smartclass-backend/internal/middleware"
 	"net/http"
 	"time"
@@ -44,7 +45,7 @@ func NewGetScheduleService(token, date, courseName string, logger *middleware.Lo
 
 // GetSchedules 获取当天课程信息
 func (s *ScheduleService) GetSchedules() (*ScheduleResponse, error) {
-	url := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/schedule/get-week-schedules?start_at=%s&end_at=%s&token=%s", s.Date, s.Date, s.Token)
+	url := fmt.Sprintf("%s?start_at=%s&end_at=%s&token=%s", config.LoadConfig().GetWeekSchedules, s.Date, s.Date, s.Token)
 	s.Logger.Log("DEBUG", fmt.Sprintf("Sending GET request to URL: %s", url))
 
 	req, err := http.NewRequest("GET", url, nil)

@@ -9,33 +9,39 @@ import (
 )
 
 type Config struct {
-	Debug              bool
-	Port               string
-	Database           string
-	SummaryWorkerCount int
-	SummaryQueueSize   int
-	TencentSecretId    string
-	TencentSecretKey   string
-	BucketUrl          string
-	OpenaiEndpoint     string
-	OpenaiKey          string
-	OpenaiModel        string
+	Debug                bool
+	Port                 string
+	Database             string
+	SummaryWorkerCount   int
+	SummaryQueueSize     int
+	TencentSecretId      string
+	TencentSecretKey     string
+	BucketUrl            string
+	OpenaiEndpoint       string
+	OpenaiKey            string
+	OpenaiModel          string
+	InfoSimple           string
+	GetWeekSchedules     string
+	SearchLiveCourseList string
 }
 
 // DefaultConfig 默认配置
 func DefaultConfig() *Config {
 	return &Config{
-		Debug:              false,
-		Port:               "8080",
-		Database:           "",
-		SummaryWorkerCount: 2,
-		SummaryQueueSize:   20,
-		TencentSecretId:    "",
-		TencentSecretKey:   "",
-		BucketUrl:          "",
-		OpenaiEndpoint:     "",
-		OpenaiKey:          "",
-		OpenaiModel:        "",
+		Debug:                false,
+		Port:                 "8080",
+		Database:             "",
+		SummaryWorkerCount:   2,
+		SummaryQueueSize:     20,
+		TencentSecretId:      "",
+		TencentSecretKey:     "",
+		BucketUrl:            "",
+		OpenaiEndpoint:       "",
+		OpenaiKey:            "",
+		OpenaiModel:          "",
+		InfoSimple:           "",
+		GetWeekSchedules:     "",
+		SearchLiveCourseList: "",
 	}
 }
 

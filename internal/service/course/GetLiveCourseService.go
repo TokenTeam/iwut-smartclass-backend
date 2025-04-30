@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iwut-smartclass-backend/internal/config"
 	"iwut-smartclass-backend/internal/middleware"
 	"net/http"
 	"strconv"
@@ -25,7 +26,7 @@ func NewGetLiveCourseService(token string, logger *middleware.Log) *GetLiveCours
 
 // SearchLiveCourse 查询课程回放
 func (s *GetLiveCourseService) SearchLiveCourse(subId, courseId int) (map[string]interface{}, error) {
-	url := fmt.Sprintf("https://yjapi.lgzk.whut.edu.cn/courseapi/v2/course-live/search-live-course-list?all=1&course_id=%d&sub_id=%d", courseId, subId)
+	url := fmt.Sprintf("%s?all=1&course_id=%d&sub_id=%d", config.LoadConfig().SearchLiveCourseList, courseId, subId)
 	s.Logger.Log("DEBUG", fmt.Sprintf("Sending GET request to URL: %s", url))
 
 	req, err := http.NewRequest("GET", url, nil)
