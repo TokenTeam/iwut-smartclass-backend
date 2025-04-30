@@ -54,4 +54,7 @@ jobs:
             -e OPENAI_ENDPOINT="${{ vars.OPENAI_ENDPOINT }}" \
             -e OPENAI_KEY="${{ secrets.OPENAI_KEY }}" \
             -e OPENAI_MODEL="${{ vars.OPENAI_MODEL }}" \
+            -e INFO_SIMPLE="${{ secrets.INFO_SIMPLE }}" \
+            -e GET_WEEK_SCHEDULES="${{ secrets.GET_WEEK_SCHEDULES }}" \
+            -e SEARCH_LIVE_COURSE_LIST= "${{ secrets.SEARCH_LIVE_COURSE_LIST }}" \
             ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_NAMESPACE }}/${{ vars.DOCKER_IMAGE_NAME }}:dev
