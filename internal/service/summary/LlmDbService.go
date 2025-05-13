@@ -16,9 +16,9 @@ func NewLlmDbService(db *sql.DB) *LlmDbService {
 }
 
 // SaveSummary 将摘要内容写入数据库
-func (s *LlmDbService) SaveSummary(subId int, asrText string) (string, error) {
-	query := `UPDATE course SET summary_data = ?, summary_status = 'finished' WHERE sub_id = ?`
-	_, err := s.Database.Exec(query, asrText, subId)
+func (s *LlmDbService) SaveSummary(subId int, user, asrText string) (string, error) {
+	query := `UPDATE course SET summary_data = ?, summary_status = 'finished', summary_user = ? WHERE sub_id = ?`
+	_, err := s.Database.Exec(query, asrText, user, subId)
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database, subId: %d: %v", subId, err))
 		return "", err

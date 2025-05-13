@@ -8,6 +8,7 @@ import (
 	"iwut-smartclass-backend/internal/cos"
 	"iwut-smartclass-backend/internal/middleware"
 	"iwut-smartclass-backend/internal/service/course"
+	"iwut-smartclass-backend/internal/service/user"
 	"iwut-smartclass-backend/internal/util"
 	"os"
 	"path/filepath"
@@ -33,10 +34,20 @@ func (j *Job) Execute() error {
 	var status string
 	var asrText string
 
+	// 创建实例
+	userInfoService := user.NewGetUserInfoService(j.Token, middleware.Logger)
+
+	// 获取用户信息
+	userInfo, err := userInfoService.GetUserInfo()
+	if err != nil {
+		middleware.Logger.Log("DEBUG", fmt.Sprintf("Failed to get UserInfo: %v", err))
+		return err
+	}
+
 	if j.Task == "new" {
 		// 获取视频密钥
 		videoAuthService := course.NewVideoAuthService(j.Token, j.CourseID, j.VideoURL, middleware.Logger)
-		videoAuth, err := videoAuthService.VideoAuth()
+		videoAuth, err := videoAuthService.VideoAuth(&userInfo)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
 			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to get video auth_key: %s", err))
@@ -137,7 +148,7 @@ func (j *Job) Execute() error {
 	}
 
 	// 保存摘要
-	_, err = j.SummaryDbSvc.SaveSummary(j.SubID, summaryText)
+	_, err = j.SummaryDbSvc.SaveSummary(j.SubID, userInfo.Account, summaryText)
 	if err != nil {
 		_ = j.SummarySvc.WriteStatus(j.SubID, status)
 		return err

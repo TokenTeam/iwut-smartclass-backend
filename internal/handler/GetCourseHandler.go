@@ -6,6 +6,7 @@ import (
 	"iwut-smartclass-backend/internal/database"
 	"iwut-smartclass-backend/internal/middleware"
 	"iwut-smartclass-backend/internal/service/course"
+	"iwut-smartclass-backend/internal/service/user"
 	"iwut-smartclass-backend/internal/util"
 	"net/http"
 	"strconv"
@@ -50,8 +51,16 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 创建实例
+	userInfoService := user.NewGetUserInfoService(requestData.Token, middleware.Logger)
 	courseDBService := course.NewCourseDbService(db)
 	getLiveCourseService := course.NewGetLiveCourseService(requestData.Token, middleware.Logger)
+
+	// 获取用户信息
+	userInfo, err := userInfoService.GetUserInfo()
+	if err != nil {
+		middleware.Logger.Log("DEBUG", fmt.Sprintf("Failed to get UserInfo: %v", err))
+		return
+	}
 
 	// 尝试从数据库中获取课程数据
 	courseData, err := courseDBService.GetCourseDataFromDb(subId)
@@ -110,7 +119,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 		videoAuthService := course.NewVideoAuthService(requestData.Token, courseId, courseData.Video, middleware.Logger)
 
 		// 获取视频密钥
-		videoAuth, err := videoAuthService.VideoAuth()
+		videoAuth, err := videoAuthService.VideoAuth(&userInfo)
 		if err != nil {
 			util.WriteResponse(w, http.StatusInternalServerError, nil)
 			return

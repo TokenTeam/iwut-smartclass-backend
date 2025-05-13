@@ -33,22 +33,12 @@ func NewVideoAuthService(token string, courseId int, video string, logger *middl
 }
 
 // VideoAuth 获取视频认证参数
-func (s *VideoAuthService) VideoAuth() (string, error) {
+func (s *VideoAuthService) VideoAuth(userInfo *user.UserInfo) (string, error) {
 	// 获取视频认证参数
 	authKey, err := s.GetVideoAuthKey()
 	if err != nil {
 		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to get auth_key: %v", err))
 		return "", fmt.Errorf("failed to get auth_key: %v", err)
-	}
-
-	// 创建实例
-	userInfoService := user.NewGetUserInfoService(s.Token, s.Logger)
-
-	// 获取用户信息
-	userInfo, err := userInfoService.GetUserInfo()
-	if err != nil {
-		s.Logger.Log("DEBUG", fmt.Sprintf("Failed to get UserInfo: %v", err))
-		return "", fmt.Errorf("failed to get UserInfo: %v", err)
 	}
 
 	// 处理视频链接

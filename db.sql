@@ -11,5 +11,6 @@ CREATE TABLE `course` (
     `asr` longtext,
     `summary_status` text,
     `summary_data` longtext,
+    `summary_user` text,
     PRIMARY KEY (`sub_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
