@@ -21,6 +21,7 @@ type Course struct {
 	Date     string            `json:"date"`
 	Time     string            `json:"time"`
 	Video    string            `json:"video"`
+	Asr      string            `json:"asr"`
 	Summary  map[string]string `json:"summary"`
 }
 
@@ -32,10 +33,10 @@ func NewCourseDbService(db *sql.DB) *CourseDbService {
 // GetCourseDataFromDb 从数据库中获取课程数据
 func (s *CourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
 	var course Course
-	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data, summary_user FROM course WHERE sub_id = ?`
+	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, asr, summary_status, summary_data, summary_user FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
 	var video, summaryStatus, summaryData, summaryUser sql.NullString
-	err := row.Scan(&course.SubId, &course.CourseId, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &summaryStatus, &summaryData, &summaryUser)
+	err := row.Scan(&course.SubId, &course.CourseId, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &course.Asr, &summaryStatus, &summaryData, &summaryUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, subId: %d: %v", subId, err))

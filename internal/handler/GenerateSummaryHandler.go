@@ -85,6 +85,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			CourseID:     courseData.CourseId,
 			CourseName:   courseData.Name,
 			VideoURL:     courseData.Video,
+			Asr:          courseData.Asr,
 			SummarySvc:   generateSummaryService,
 			ConvertSvc:   convertService,
 			AsrSvc:       summary.NewAsrDbService(db),

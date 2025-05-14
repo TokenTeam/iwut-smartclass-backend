@@ -21,6 +21,7 @@ type Job struct {
 	CourseID     int
 	CourseName   string
 	VideoURL     string
+	Asr          string
 	SummarySvc   *Service
 	ConvertSvc   *ConvertVideoToAudioService
 	AsrSvc       *AsrDbService
@@ -44,7 +45,7 @@ func (j *Job) Execute() error {
 		return err
 	}
 
-	if j.Task == "new" {
+	if j.Task == "new" && j.Asr == "" {
 		// 获取视频密钥
 		videoAuthService := course.NewVideoAuthService(j.Token, j.CourseID, j.VideoURL, middleware.Logger)
 		videoAuth, err := videoAuthService.VideoAuth(&userInfo)
@@ -63,6 +64,7 @@ func (j *Job) Execute() error {
 			audioID, err = j.ConvertSvc.Convert(j.SubID, video)
 			if err != nil {
 				_ = j.SummarySvc.WriteStatus(j.SubID, status)
+				_ = j.ConvertSvc.SaveAudioId(j.SubID, audioID)
 				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %s", err))
 				return err
 			}
