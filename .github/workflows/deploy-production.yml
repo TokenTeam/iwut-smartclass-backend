@@ -54,3 +54,6 @@ jobs:
             -e GET_WEEK_SCHEDULES="${{ secrets.GET_WEEK_SCHEDULES }}" \
             -e SEARCH_LIVE_COURSE_LIST="${{ secrets.SEARCH_LIVE_COURSE_LIST }}" \
             mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
+      - name: Docker image prune
+        run: |
+          docker image prune -a -f
