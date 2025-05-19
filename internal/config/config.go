@@ -14,8 +14,8 @@ type Config struct {
 	Database             string
 	SummaryWorkerCount   int
 	SummaryQueueSize     int
-	TencentSecretId      string
-	TencentSecretKey     string
+	TencentSecretId      []string
+	TencentSecretKey     []string
 	BucketUrl            string
 	OpenaiEndpoint       string
 	OpenaiKey            string
@@ -33,8 +33,8 @@ func DefaultConfig() *Config {
 		Database:             "",
 		SummaryWorkerCount:   2,
 		SummaryQueueSize:     20,
-		TencentSecretId:      "",
-		TencentSecretKey:     "",
+		TencentSecretId:      []string{},
+		TencentSecretKey:     []string{},
 		BucketUrl:            "",
 		OpenaiEndpoint:       "",
 		OpenaiKey:            "",
@@ -72,14 +72,24 @@ func LoadConfigFromEnv(config *Config) *Config {
 			continue
 		}
 
-		switch field.Kind() {
-		case reflect.String:
-			field.SetString(envVal)
-		case reflect.Bool:
-			field.SetBool(envVal == "true")
-		case reflect.Int, reflect.Int64:
-			if intVal, err := strconv.Atoi(envVal); err == nil {
-				field.SetInt(int64(intVal))
+		switch fieldName {
+		case "TencentSecretId", "TencentSecretKey":
+			// 处理逗号分隔的字符串
+			values := strings.Split(envVal, ",")
+			for i, v := range values {
+				values[i] = strings.TrimSpace(v)
+			}
+			field.Set(reflect.ValueOf(values))
+		default:
+			switch field.Kind() {
+			case reflect.String:
+				field.SetString(envVal)
+			case reflect.Bool:
+				field.SetBool(envVal == "true")
+			case reflect.Int, reflect.Int64:
+				if intVal, err := strconv.Atoi(envVal); err == nil {
+					field.SetInt(int64(intVal))
+				}
 			}
 		}
 	}

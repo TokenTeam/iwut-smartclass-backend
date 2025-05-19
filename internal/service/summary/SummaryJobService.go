@@ -10,6 +10,7 @@ import (
 	"iwut-smartclass-backend/internal/service/course"
 	"iwut-smartclass-backend/internal/service/user"
 	"iwut-smartclass-backend/internal/util"
+	"math/rand"
 	"os"
 	"path/filepath"
 )
@@ -74,7 +75,7 @@ func (j *Job) Execute() error {
 		audioFilePath := filepath.Join("data", "audio", audioFileName)
 
 		// 上传到 COS
-		cosService, err := cos.NewCosService(j.Config.TencentSecretId, j.Config.TencentSecretKey, j.Config.BucketUrl)
+		cosService, err := cos.NewCosService(j.Config.TencentSecretId[0], j.Config.TencentSecretKey[0], j.Config.BucketUrl)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
 			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent COS service: %s", err))
@@ -91,7 +92,8 @@ func (j *Job) Execute() error {
 		bucketFilePath := j.Config.BucketUrl + "/" + audioFileName
 
 		// ASR 识别
-		tencentASRService, err := asr.NewTencentASRService(j.Config.TencentSecretId, j.Config.TencentSecretKey)
+		randIdx := rand.Intn(len(j.Config.TencentSecretId))
+		tencentASRService, err := asr.NewTencentASRService(j.Config.TencentSecretId[randIdx], j.Config.TencentSecretKey[randIdx])
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
 			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent ASR service: %s", err))
