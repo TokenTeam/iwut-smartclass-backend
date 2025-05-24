@@ -22,7 +22,6 @@ type UserInfo struct {
 	TenantId int
 }
 
-// NewGetUserInfoService 创建实例
 func NewGetUserInfoService(token string, logger *middleware.Log) *GetUserInfoService {
 	return &GetUserInfoService{
 		Token:  token,

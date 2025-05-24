@@ -12,7 +12,6 @@ type Job interface {
 	Execute() error
 }
 
-// WorkQueue 工作队列
 type WorkQueue struct {
 	name         string        // 队列名称
 	jobQueue     chan Job      // 任务通道
@@ -29,7 +28,6 @@ var (
 	queueMutex sync.Mutex
 )
 
-// NewWorkQueue 初始化工作队列
 func NewWorkQueue(name string, workerCount int, queueSize int) *WorkQueue {
 	queueMutex.Lock()
 	defer queueMutex.Unlock()
@@ -55,7 +53,6 @@ func NewWorkQueue(name string, workerCount int, queueSize int) *WorkQueue {
 	return queue
 }
 
-// Start 启动工作队列
 func (q *WorkQueue) Start() {
 	Logger.Log("INFO", fmt.Sprintf("[Queue] Starting work queue: %s", q.name))
 
@@ -65,7 +62,6 @@ func (q *WorkQueue) Start() {
 	}
 }
 
-// Worker 工作函数
 func (q *WorkQueue) Worker(id int) {
 	defer q.wg.Done()
 	workerName := fmt.Sprintf("%s-worker-%d", q.name, id)
@@ -93,7 +89,7 @@ func (q *WorkQueue) Worker(id int) {
 			<-q.workerPool
 
 			if err != nil {
-				Logger.Log("ERROR", fmt.Sprintf("[Queue] %s job failed after %s: %s", workerName, duration.String(), err.Error()))
+				Logger.Log("ERROR", fmt.Sprintf("[Queue] %s job failed after %s: %v", workerName, duration.String(), err.Error()))
 			} else {
 				Logger.Log("DEBUG", fmt.Sprintf("[Queue] %s job completed in %s", workerName, duration.String()))
 			}
@@ -101,7 +97,6 @@ func (q *WorkQueue) Worker(id int) {
 	}
 }
 
-// AddJob 添加任务到队列
 func (q *WorkQueue) AddJob(job Job) {
 	select {
 	case <-q.ctx.Done():
@@ -112,7 +107,6 @@ func (q *WorkQueue) AddJob(job Job) {
 	}
 }
 
-// Stop 停止工作队列
 func (q *WorkQueue) Stop() {
 	Logger.Log("INFO", fmt.Sprintf("[Queue] Stopping queue: %s", q.name))
 	q.cancelFunc()
@@ -122,14 +116,12 @@ func (q *WorkQueue) Stop() {
 	Logger.Log("INFO", fmt.Sprintf("[Queue] Queue stopped: %s", q.name))
 }
 
-// GetQueue 获取已创建的队列
 func GetQueue(name string) *WorkQueue {
 	queueMutex.Lock()
 	defer queueMutex.Unlock()
 	return queues[name]
 }
 
-// InitQueues 初始化所有工作队列
 func InitQueues(cfg *config.Config) {
 	// Summary Service
 	summaryQueue := NewWorkQueue("SummaryServiceQueue", cfg.SummaryWorkerCount, cfg.SummaryQueueSize)

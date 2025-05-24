@@ -65,7 +65,7 @@ func (s *Service) Recognize(audioFilePath string) (string, error) {
 
 			return cleanedText, nil
 		} else if *resultResponse.Response.Data.Status == 3 {
-			middleware.Logger.Log("ERROR", fmt.Sprintf("[ASR] Task failed: %s", *resultResponse.Response.Data.ErrorMsg))
+			middleware.Logger.Log("ERROR", fmt.Sprintf("[ASR] Task failed: %v", *resultResponse.Response.Data.ErrorMsg))
 			return "", nil
 		}
 

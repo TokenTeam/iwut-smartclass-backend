@@ -11,17 +11,16 @@ import (
 	"path/filepath"
 )
 
-type ConvertVideoToAudioService struct {
+type ConvertService struct {
 	Service
 }
 
-// NewConvertVideoToAudioService 创建实例
-func NewConvertVideoToAudioService(db *sql.DB) *ConvertVideoToAudioService {
-	return &ConvertVideoToAudioService{Service{Database: db}}
+func NewConvertService(db *sql.DB) *ConvertService {
+	return &ConvertService{Service{Database: db}}
 }
 
 // Convert 将视频转换为音频文件
-func (s *ConvertVideoToAudioService) Convert(subId int, videoFile string) (string, error) {
+func (s *ConvertService) Convert(subId int, videoFile string) (string, error) {
 	// 生成音频文件名
 	audioID := uuid.New().String()
 	audioFileName := audioID + ".aac"
@@ -51,7 +50,7 @@ func (s *ConvertVideoToAudioService) Convert(subId int, videoFile string) (strin
 }
 
 // GetAudioId 从数据库中获取 audioID
-func (s *ConvertVideoToAudioService) GetAudioId(subId int) (string, error) {
+func (s *ConvertService) GetAudioId(subId int) (string, error) {
 	query := `SELECT audio_id FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
 	var audioID sql.NullString
@@ -70,7 +69,7 @@ func (s *ConvertVideoToAudioService) GetAudioId(subId int) (string, error) {
 }
 
 // SaveAudioId 将 audioID 写入数据库
-func (s *ConvertVideoToAudioService) SaveAudioId(subId int, audioID string) error {
+func (s *ConvertService) SaveAudioId(subId int, audioID string) error {
 	query := `UPDATE course SET audio_id = ? WHERE sub_id = ?`
 	_, err := s.Database.Exec(query, audioID, subId)
 	if err != nil {

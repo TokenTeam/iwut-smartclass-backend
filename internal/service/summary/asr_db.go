@@ -7,17 +7,16 @@ import (
 	"iwut-smartclass-backend/internal/middleware"
 )
 
-type AsrDbService struct {
+type AsrDBService struct {
 	Service
 }
 
-// NewAsrDbService 创建实例
-func NewAsrDbService(db *sql.DB) *AsrDbService {
-	return &AsrDbService{Service{Database: db}}
+func NewAsrDBService(db *sql.DB) *AsrDBService {
+	return &AsrDBService{Service{Database: db}}
 }
 
 // GetAsr 从数据库读取 ASR 内容
-func (s *AsrDbService) GetAsr(subId int) (string, error) {
+func (s *AsrDBService) GetAsr(subId int) (string, error) {
 	query := `SELECT asr FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
 	var asr sql.NullString
@@ -36,7 +35,7 @@ func (s *AsrDbService) GetAsr(subId int) (string, error) {
 }
 
 // SaveAsr 将 ASR 内容写入数据库
-func (s *AsrDbService) SaveAsr(subId int, asrText string) (string, error) {
+func (s *AsrDBService) SaveAsr(subId int, asrText string) (string, error) {
 	query := `UPDATE course SET asr = ? WHERE sub_id = ?`
 	_, err := s.Database.Exec(query, asrText, subId)
 	if err != nil {

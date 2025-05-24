@@ -10,7 +10,6 @@ type Service struct {
 	Database *sql.DB
 }
 
-// NewGenerateSummaryService 创建实例
 func NewGenerateSummaryService(db *sql.DB) *Service {
 	return &Service{Database: db}
 }

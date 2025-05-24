@@ -25,7 +25,6 @@ type Config struct {
 	SearchLiveCourseList string
 }
 
-// DefaultConfig 默认配置
 func DefaultConfig() *Config {
 	return &Config{
 		Debug:                false,
@@ -45,7 +44,6 @@ func DefaultConfig() *Config {
 	}
 }
 
-// LoadConfig 加载配置
 func LoadConfig() *Config {
 	// 获取默认配置
 	config := DefaultConfig()
@@ -57,7 +55,6 @@ func LoadConfig() *Config {
 	return LoadConfigFromEnv(config)
 }
 
-// LoadConfigFromEnv 从环境变量加载配置
 func LoadConfigFromEnv(config *Config) *Config {
 	val := reflect.ValueOf(config).Elem()
 	typ := val.Type()
@@ -97,7 +94,6 @@ func LoadConfigFromEnv(config *Config) *Config {
 	return config
 }
 
-// fieldNameToEnvName 将结构体字段名转换为环境变量名
 func fieldNameToEnvName(name string) string {
 	var result strings.Builder
 	for i, char := range name {

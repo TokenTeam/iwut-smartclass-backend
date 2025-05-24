@@ -10,12 +10,10 @@ import (
 //go:embed *
 var staticFiles embed.FS
 
-// GetAssets 获取静态资源文件内容
 func GetAssets(filename string) ([]byte, error) {
 	return staticFiles.ReadFile(fmt.Sprintf("assets/%s", filename))
 }
 
-// GetFileSystem 获取可供HTTP服务使用的文件系统
 func GetFileSystem() (http.FileSystem, error) {
 	subFS, err := fs.Sub(staticFiles, "assets")
 	if err != nil {
@@ -24,7 +22,6 @@ func GetFileSystem() (http.FileSystem, error) {
 	return http.FS(subFS), nil
 }
 
-// ListAssets 列出所有可用的静态资源
 func ListAssets() ([]string, error) {
 	var assets []string
 	err := fs.WalkDir(staticFiles, "assets", func(path string, d fs.DirEntry, err error) error {

@@ -6,7 +6,6 @@ import (
 	"os/exec"
 )
 
-// ConvertVideoToAudio 将视频文件转换为音频文件
 func ConvertVideoToAudio(inputFile, outputFile string) error {
 	middleware.Logger.Log("INFO", fmt.Sprintf("[FFMPEG] Starting conversion: %s to %s", inputFile, outputFile))
 

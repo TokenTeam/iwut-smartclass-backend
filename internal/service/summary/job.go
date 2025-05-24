@@ -24,15 +24,13 @@ type Job struct {
 	VideoURL     string
 	Asr          string
 	SummarySvc   *Service
-	ConvertSvc   *ConvertVideoToAudioService
-	AsrSvc       *AsrDbService
-	SummaryDbSvc *LlmDbService
+	ConvertSvc   *ConvertService
+	AsrSvc       *AsrDBService
+	SummaryDbSvc *LlmDBService
 	Config       *config.Config
 }
 
-// Execute 实现 Job 接口的方法
 func (j *Job) Execute() error {
-	// 声明必要的变量
 	var status string
 	var asrText string
 
@@ -52,7 +50,7 @@ func (j *Job) Execute() error {
 		videoAuth, err := videoAuthService.VideoAuth(&userInfo)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
-			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to get video auth_key: %s", err))
+			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to get video auth_key: %v", err))
 			return err
 		}
 
@@ -66,7 +64,7 @@ func (j *Job) Execute() error {
 			if err != nil {
 				_ = j.SummarySvc.WriteStatus(j.SubID, status)
 				_ = j.ConvertSvc.SaveAudioId(j.SubID, audioID)
-				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %s", err))
+				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %v", err))
 				return err
 			}
 		}
@@ -78,14 +76,14 @@ func (j *Job) Execute() error {
 		cosService, err := cos.NewCosService(j.Config.TencentSecretId[0], j.Config.TencentSecretKey[0], j.Config.BucketUrl)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
-			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent COS service: %s", err))
+			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent COS service: %v", err))
 			return err
 		}
 
 		err = cosService.UploadFile(audioFilePath, audioFileName)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
-			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to upload file: %s", err))
+			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to upload file: %v", err))
 			return err
 		}
 
@@ -96,7 +94,7 @@ func (j *Job) Execute() error {
 		tencentASRService, err := asr.NewTencentASRService(j.Config.TencentSecretId[randIdx], j.Config.TencentSecretKey[randIdx])
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
-			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent ASR service: %s", err))
+			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to create Tencent ASR service: %v", err))
 			return err
 		}
 
@@ -138,7 +136,7 @@ func (j *Job) Execute() error {
 	// 读取提示词
 	promptTemplate, err := assets.GetAssets("templates/course_summary_prompt.txt")
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to read prompt template: %s", err))
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to read prompt template: %v", err))
 		_ = j.SummarySvc.WriteStatus(j.SubID, status)
 		return err
 	}

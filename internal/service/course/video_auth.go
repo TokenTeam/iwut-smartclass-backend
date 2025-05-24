@@ -22,7 +22,6 @@ type VideoAuthService struct {
 	Logger   *middleware.Log
 }
 
-// NewVideoAuthService 创建实例
 func NewVideoAuthService(token string, courseId int, video string, logger *middleware.Log) *VideoAuthService {
 	return &VideoAuthService{
 		Token:    token,
@@ -69,7 +68,6 @@ func (s *VideoAuthService) VideoAuth(userInfo *user.UserInfo) (string, error) {
 	return key, nil
 }
 
-// GetVideoAuthKey 获取视频认证参数
 func (s *VideoAuthService) GetVideoAuthKey() (string, error) {
 	authKeyUrl := fmt.Sprintf("%s?all=1&course_id=%d&sub_id=%d&token=%s", config.LoadConfig().SearchLiveCourseList, s.CourseId, s.SubId, s.Token)
 

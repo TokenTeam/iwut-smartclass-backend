@@ -28,7 +28,7 @@ func main() {
 	// 列出所有嵌入的静态资源
 	assetsList, err := assets.ListAssets()
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to load packaged assets: %s", err))
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to load packaged assets: %v", err))
 		return
 	} else {
 		middleware.Logger.Log("DEBUG", fmt.Sprintf("Packaged assets: \n%s", strings.Join(assetsList, "\n")))
@@ -41,7 +41,7 @@ func main() {
 	// 初始化数据库连接
 	err = database.NewDB(cfg)
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to initialize database: %s", err))
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to initialize database: %v", err))
 		return
 	}
 	defer database.GetDB().Close()
@@ -50,9 +50,9 @@ func main() {
 	middleware.InitQueues(cfg)
 
 	// 启动服务
-	middleware.Logger.Log("INFO", "Starting server on port "+cfg.Port)
+	middleware.Logger.Log("INFO", fmt.Sprintf("Starting server on port %s", cfg.Port))
 	err = http.ListenAndServe(":"+cfg.Port, loggedRouter)
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to start server: %s", err))
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to start server: %v", err))
 	}
 }

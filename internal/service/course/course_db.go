@@ -8,7 +8,7 @@ import (
 	"iwut-smartclass-backend/internal/middleware"
 )
 
-type CourseDbService struct {
+type CourseDBService struct {
 	Database *sql.DB
 }
 
@@ -25,13 +25,12 @@ type Course struct {
 	Summary  map[string]string `json:"summary"`
 }
 
-// NewCourseDbService 创建实例
-func NewCourseDbService(db *sql.DB) *CourseDbService {
-	return &CourseDbService{Database: db}
+func NewCourseDbService(db *sql.DB) *CourseDBService {
+	return &CourseDBService{Database: db}
 }
 
 // GetCourseDataFromDb 从数据库中获取课程数据
-func (s *CourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
+func (s *CourseDBService) GetCourseDataFromDb(subId int) (Course, error) {
 	var course Course
 	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, asr, summary_status, summary_data, summary_user FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
@@ -54,7 +53,7 @@ func (s *CourseDbService) GetCourseDataFromDb(subId int) (Course, error) {
 }
 
 // SaveCourseDataToDb 将课程数据写入数据库
-func (s *CourseDbService) SaveCourseDataToDb(course Course) error {
+func (s *CourseDBService) SaveCourseDataToDb(course Course) error {
 	query := `INSERT INTO course (sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data, summary_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	_, err := s.Database.Exec(query, course.SubId, course.CourseId, course.Name, course.Teacher, course.Location, course.Date, course.Time, course.Video, course.Summary["status"], course.Summary["data"], "")
 	if err != nil {
@@ -67,7 +66,7 @@ func (s *CourseDbService) SaveCourseDataToDb(course Course) error {
 }
 
 // SaveVideo 将 Video 内容写入数据库
-func (s *CourseDbService) SaveVideo(subId int, video string) error {
+func (s *CourseDBService) SaveVideo(subId int, video string) error {
 	query := `UPDATE course SET video = ? WHERE sub_id = ?`
 	_, err := s.Database.Exec(query, video, subId)
 	if err != nil {

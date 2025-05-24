@@ -25,7 +25,6 @@ func NewCosService(secretId, secretKey, bucketURL string) (*Service, error) {
 	return &Service{client: client}, nil
 }
 
-// UploadFile 上传文件到 COS
 func (s *Service) UploadFile(localFilePath, remoteFilePath string) error {
 	middleware.Logger.Log("INFO", fmt.Sprintf("[COS] Creating upload task with file: %s", localFilePath))
 	_, err := s.client.Object.PutFromFile(context.Background(), remoteFilePath, localFilePath, nil)
@@ -37,7 +36,6 @@ func (s *Service) UploadFile(localFilePath, remoteFilePath string) error {
 	return nil
 }
 
-// DownloadFile 从 COS 下载文件
 func (s *Service) DownloadFile(remoteFilePath, localFilePath string) error {
 	middleware.Logger.Log("INFO", fmt.Sprintf("[COS] Creating download with file: %s", localFilePath))
 	_, err := s.client.Object.GetToFile(context.Background(), remoteFilePath, localFilePath, nil)
@@ -49,7 +47,6 @@ func (s *Service) DownloadFile(remoteFilePath, localFilePath string) error {
 	return nil
 }
 
-// DeleteFile 删除 COS 中的文件
 func (s *Service) DeleteFile(remoteFilePath string) error {
 	middleware.Logger.Log("INFO", fmt.Sprintf("[COS] Creating delete task for file: %s", remoteFilePath))
 	_, err := s.client.Object.Delete(context.Background(), remoteFilePath)

@@ -38,7 +38,7 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 	// 创建实例
 	generateSummaryService := summary.NewGenerateSummaryService(db)
 	getCourseDBService := course.NewCourseDbService(db)
-	convertService := summary.NewConvertVideoToAudioService(db)
+	convertService := summary.NewConvertService(db)
 
 	// 尝试从数据库中获取课程数据
 	subId, err := strconv.Atoi(strconv.Itoa(requestData.SubId))
@@ -88,8 +88,8 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			Asr:          courseData.Asr,
 			SummarySvc:   generateSummaryService,
 			ConvertSvc:   convertService,
-			AsrSvc:       summary.NewAsrDbService(db),
-			SummaryDbSvc: summary.NewLlmDbService(db),
+			AsrSvc:       summary.NewAsrDBService(db),
+			SummaryDbSvc: summary.NewLlmDBService(db),
 			Config:       cfg,
 		}
 		summaryQueue.AddJob(job)
