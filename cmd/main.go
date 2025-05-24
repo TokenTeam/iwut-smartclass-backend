@@ -50,7 +50,7 @@ func main() {
 	middleware.InitQueues(cfg)
 
 	// 启动服务
-	middleware.Logger.Log("INFO", "Starting server on port "+cfg.Port)
+	middleware.Logger.Log("INFO", fmt.Sprintf("Starting server on port %s", cfg.Port))
 	err = http.ListenAndServe(":"+cfg.Port, loggedRouter)
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to start server: %s", err))

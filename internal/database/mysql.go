@@ -25,13 +25,13 @@ func NewDB(cfg *config.Config) error {
 	start := time.Now()
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to connect to MySQL: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to connect to MySQL: %s", err))
 		return err
 	}
 
 	// 检查数据库连接
 	if err := db.Ping(); err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to ping MySQL: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to ping MySQL: %s", err))
 		return err
 	}
 	elapsed := time.Since(start)
@@ -41,7 +41,7 @@ func NewDB(cfg *config.Config) error {
 	var count int
 	err = db.QueryRow("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE()").Scan(&count)
 	if err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to check: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to check: %s", err))
 		return err
 	}
 
@@ -70,20 +70,20 @@ func GetDB() *sql.DB {
 func initializeDatabase(db *sql.DB) error {
 	file, err := os.Open("db.sql")
 	if err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to open db.sql: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to open db.sql: %s", err))
 		return err
 	}
 	defer file.Close()
 
 	sqlBytes, err := io.ReadAll(file)
 	if err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to read db.sql: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to read db.sql: %s", err))
 		return err
 	}
 
 	_, err = db.Exec(string(sqlBytes))
 	if err != nil {
-		middleware.Logger.Log("ERROR", "[DB] Failed to execute db.sql: "+err.Error())
+		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to execute db.sql: %s", err))
 		return err
 	}
 
