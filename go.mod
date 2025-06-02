@@ -8,7 +8,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.0.1163
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1163
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.65
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.66
 )
 
 require (
