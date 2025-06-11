@@ -34,8 +34,8 @@ func (s *CourseDBService) GetCourseDataFromDb(subId int) (Course, error) {
 	var course Course
 	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, asr, summary_status, summary_data, summary_user FROM course WHERE sub_id = ?`
 	row := s.Database.QueryRow(query, subId)
-	var video, summaryStatus, summaryData, summaryUser sql.NullString
-	err := row.Scan(&course.SubId, &course.CourseId, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &course.Asr, &summaryStatus, &summaryData, &summaryUser)
+	var video, asr, summaryStatus, summaryData, summaryUser sql.NullString
+	err := row.Scan(&course.SubId, &course.CourseId, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &asr, &summaryStatus, &summaryData, &summaryUser)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, subId: %d: %v", subId, err))
@@ -44,6 +44,7 @@ func (s *CourseDBService) GetCourseDataFromDb(subId int) (Course, error) {
 		return Course{}, err
 	}
 	course.Video = video.String
+	course.Asr = asr.String
 	course.Summary = map[string]string{
 		"status": summaryStatus.String,
 		"data":   summaryData.String,
