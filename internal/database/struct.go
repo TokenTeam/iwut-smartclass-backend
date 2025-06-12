@@ -13,6 +13,8 @@ type Course struct {
 	Asr           string `gorm:"column:asr;type:longtext"`
 	SummaryStatus string `gorm:"column:summary_status"`
 	SummaryData   string `gorm:"column:summary_data;type:longtext"`
+	Model         string `gorm:"column:model"`
+	Token         uint32 `gorm:"column:token"`
 	SummaryUser   string `gorm:"column:summary_user"`
 }
 

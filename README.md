@@ -75,8 +75,10 @@ chmod +x ./server
     "time": "08:00-09:40",
     "video": "https://site/play/default/2025/03/26/123_1920_1080.mp4",
     "summary": {
+      "status": "",
       "data": "",
-      "status": ""
+      "model": "deepseek-chat",
+      "token": 10000
     }
   }
 }

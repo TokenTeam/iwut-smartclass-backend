@@ -83,7 +83,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				Date:     liveCourseData["date"].(string),
 				Time:     liveCourseData["time"].(string),
 				Video:    liveCourseData["video"].(string),
-				Summary:  map[string]string{"status": "", "data": ""},
+				Summary:  map[string]string{"status": "", "data": "", "model": "", "token": ""},
 			}
 
 			err = courseDBService.SaveCourseDataToDb(courseData)

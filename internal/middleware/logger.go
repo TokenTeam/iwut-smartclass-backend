@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-// Logger 全局日志记录器
 var Logger *Log
 
 type Log struct {

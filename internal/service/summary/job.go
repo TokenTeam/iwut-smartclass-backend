@@ -143,14 +143,14 @@ func (j *Job) Execute() error {
 	prompt := fmt.Sprintf(string(promptTemplate), j.CourseName)
 
 	// 生成摘要
-	summaryText, err := util.CallOpenAI(j.Config, prompt, asrText)
+	summaryText, token, err := util.CallOpenAI(j.Config, prompt, asrText)
 	if err != nil {
 		_ = j.SummarySvc.WriteStatus(j.SubID, status)
 		return err
 	}
 
 	// 保存摘要
-	_, err = j.SummaryDbSvc.SaveSummary(j.SubID, userInfo.Account, summaryText)
+	_, err = j.SummaryDbSvc.SaveSummary(j.SubID, userInfo.Account, summaryText, j.Config.OpenaiModel, token)
 	if err != nil {
 		_ = j.SummarySvc.WriteStatus(j.SubID, status)
 		return err
