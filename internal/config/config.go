@@ -20,6 +20,7 @@ type Config struct {
 	OpenaiEndpoint       string
 	OpenaiKey            string
 	OpenaiModel          string
+	Temperature          float32
 	InfoSimple           string
 	GetWeekSchedules     string
 	SearchLiveCourseList string
@@ -38,6 +39,7 @@ func DefaultConfig() *Config {
 		OpenaiEndpoint:       "",
 		OpenaiKey:            "",
 		OpenaiModel:          "",
+		Temperature:          0.3,
 		InfoSimple:           "",
 		GetWeekSchedules:     "",
 		SearchLiveCourseList: "",

@@ -16,6 +16,8 @@ type OpenAIRequest struct {
 		Role    string `json:"role"`
 		Content string `json:"content"`
 	} `json:"messages"`
+	Stream      bool    `json:"stream"`
+	Temperature float32 `json:"temperature"`
 }
 
 // OpenAIResponse 通用 OpenAI 响应结构
@@ -34,14 +36,11 @@ type OpenAIResponse struct {
 
 // CallOpenAI 调用 OpenAI API
 func CallOpenAI(cfg *config.Config, prompt, userInput string) (string, error) {
-	url := cfg.OpenaiEndpoint
-	apiKey := cfg.OpenaiKey
-	model := cfg.OpenaiModel
 
 	middleware.Logger.Log("INFO", "[OpenAI] Creating a new request")
 
 	requestBody, err := json.Marshal(OpenAIRequest{
-		Model: model,
+		Model: cfg.OpenaiModel,
 		Messages: []struct {
 			Role    string `json:"role"`
 			Content string `json:"content"`
@@ -49,20 +48,22 @@ func CallOpenAI(cfg *config.Config, prompt, userInput string) (string, error) {
 			{Role: "system", Content: prompt},
 			{Role: "user", Content: userInput},
 		},
+		Stream:      false,
+		Temperature: cfg.Temperature,
 	})
 	if err != nil {
 		middleware.Logger.Log("WARN", fmt.Sprintf("[OpenAI] Failed to marshal request body: %v", err))
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", cfg.OpenaiEndpoint, bytes.NewBuffer(requestBody))
 	if err != nil {
 		middleware.Logger.Log("WARN", fmt.Sprintf("[OpenAI] Failed to create new request: %v", err))
 		return "", err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", cfg.OpenaiKey))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
