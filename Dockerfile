@@ -2,11 +2,13 @@ FROM golang:alpine AS builder
 
 WORKDIR /app
 
+RUN apk add --no-cache upx
+
 COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go build -o server ./cmd
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o server ./cmd && upx -9 server
 
 FROM alpine:latest
 
