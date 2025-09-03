@@ -1,23 +1,7 @@
 package database
 
-type Course struct {
-	SubID         int    `gorm:"primaryKey;column:sub_id"`
-	CourseID      int    `gorm:"column:course_id"`
-	Name          string `gorm:"column:name"`
-	Teacher       string `gorm:"column:teacher"`
-	Location      string `gorm:"column:location"`
-	Date          string `gorm:"column:date"`
-	Time          string `gorm:"column:time"`
-	Video         string `gorm:"column:video"`
-	AudioID       string `gorm:"column:audio_id"`
-	Asr           string `gorm:"column:asr;type:longtext"`
-	SummaryStatus string `gorm:"column:summary_status"`
-	SummaryData   string `gorm:"column:summary_data;type:longtext"`
-	Model         string `gorm:"column:model"`
-	Token         uint32 `gorm:"column:token"`
-	SummaryUser   string `gorm:"column:summary_user"`
-}
+import "iwut-smartclass-backend/internal/database/struct"
 
-func (Course) TableName() string {
-	return "course"
+var Structs = []interface{}{
+	&_struct.Course{},
 }

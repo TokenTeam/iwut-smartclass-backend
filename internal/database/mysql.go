@@ -41,9 +41,11 @@ func NewDB(cfg *config.Config) error {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] GORM connect failed: %v", err))
 		return err
 	}
-	if err = gormDB.AutoMigrate(&Course{}); err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] AutoMigrate failed: %v", err))
-		return err
+	for _, s := range Structs {
+		if err = gormDB.AutoMigrate(s); err != nil {
+			middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] AutoMigrate failed: %v", err))
+			return err
+		}
 	}
 	middleware.Logger.Log("INFO", "[DB] AutoMigrate completed")
 
