@@ -83,7 +83,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 				Date:     liveCourseData["date"].(string),
 				Time:     liveCourseData["time"].(string),
 				Video:    liveCourseData["video"].(string),
-				Summary:  map[string]string{"status": "", "data": "", "model": "", "token": "0"}, 
+				Summary:  map[string]string{"status": "", "data": "", "model": "", "token": "0"},
 			}
 
 			err = courseDBService.SaveCourseDataToDb(courseData)
@@ -111,6 +111,30 @@ func GetCourse(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		courseData.Video = videoURL
+	}
+
+	userSummary, err := courseDBService.GetUserSummaryFromDb(subId, userInfo.Account)
+	if err != nil {
+		util.WriteResponse(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	// 如果用户重新生成，使用用户的摘要覆盖原有摘要（临时）
+	if len(userSummary) > 0 {
+		var status string
+
+		if userSummary[0].Summary == "" {
+			status = "generating"
+		} else {
+			status = "finished"
+		}
+
+		courseData.Summary = map[string]string{
+			"status": status,
+			"data":   userSummary[0].Summary,
+			"model":  userSummary[0].Model,
+			"token":  fmt.Sprintf("%d", userSummary[0].Token),
+		}
 	}
 
 	// 将视频密钥拼接在视频链接后

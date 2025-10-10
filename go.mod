@@ -1,9 +1,9 @@
 module iwut-smartclass-backend
 
-go 1.24
+go 1.24.0
 
 require (
-	github.com/go-sql-driver/mysql v1.9.2
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.1.29
@@ -22,5 +22,5 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mozillazg/go-httpheader v0.4.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 )

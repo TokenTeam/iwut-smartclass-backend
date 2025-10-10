@@ -1,0 +1,261 @@
+<example1>
+<course1>
+高等数学A下
+</course1>
+<output1>
+## 球面坐标与三重积分
+
+### 1. 球面坐标定义
+- **定义**：空间中点$M(x,y,z)$的球面坐标为$(r, \theta, \phi)$：
+  - $r$：点$M$到坐标原点的距离。
+  - $\phi$：向量$\overrightarrow{OM}$与$z$轴正向的夹角（方向角）。
+  - $\theta$：点$M$在$xOy$平面的投影点$P$与$x$轴正向的夹角。
+- **取值范围**：
+  - $r \in [0, +\infty)$
+  - $\phi \in [0, \pi]$
+  - $\theta \in [0, 2\pi]$
+
+### 2. 球面坐标与直角坐标的关系
+- 转换公式：
+  \[
+  \begin{cases}
+  x = r \sin \phi \cos \theta \\
+  y = r \sin \phi \sin \theta \\
+  z = r \cos \phi
+  \end{cases}
+  \]
+- 逆转换公式：
+  \[
+  r = \sqrt{x^2 + y^2 + z^2}
+  \]
+  \[
+  \theta = \arctan\left(\frac{y}{x}\right)
+  \]
+  \[
+  \phi = \arccos\left(\frac{z}{r}\right)
+  \]
+
+### 3. 体积元素
+- 在球面坐标系下，体积元素为：
+  \[
+  dv = r^2 \sin \phi \, dr \, d\theta \, d\phi
+  \]
+
+### 4. 三重积分在球面坐标系下的表示
+- 直角坐标系下的三重积分转换为球面坐标系下的三重积分：
+  \[
+  \iiint_\Omega f(x,y,z) \, dx \, dy \, dz = \iiint_\Omega f(r \sin \phi \cos \theta, r \sin \phi \sin \theta, r \cos \phi) \cdot r^2 \sin \phi \, dr \, d\theta \, d\phi
+  \]
+
+### 5. 积分次序
+- 理论上有六种积分顺序，但通常采用“先$r$后$\theta$和$\phi$”的顺序：
+  \[
+  \iiint_\Omega f \, dv = \int_{\theta_1}^{\theta_2} \int_{\phi_1}^{\phi_2} \int_{r_1(\theta, \phi)}^{r_2(\theta, \phi)} f \cdot r^2 \sin \phi \, dr \, d\phi \, d\theta
+  \]
+
+### 6. 应用场景
+- **积分区域**：适用于球体或球体的一部分（如半球、球壳等）。
+- **被积函数**：当被积函数中含有$x^2 + y^2 + z^2$或其平方根时，优先考虑球面坐标。
+
+### 7. 特殊情况的积分计算
+- **球体体积**：
+  - 设球面方程为$r = a$，则体积为：
+    \[
+    V = \iiint_\Omega dv = \int_0^{2\pi} \int_0^\pi \int_0^a r^2 \sin \phi \, dr \, d\phi \, d\theta = \frac{4}{3} \pi a^3
+    \]
+- **球坐标系下的对称性**：
+  - 若积分区域关于坐标面对称，且被积函数具有奇偶性，可简化计算（如偶函数在对称区域上积分可翻倍）。
+
+### 8. 例题
+- **计算球体的三重积分**：
+  \[
+  \iiint_\Omega (x^2 + y^2 + z^2) \, dv = \int_0^{2\pi} \int_0^\pi \int_0^a r^4 \sin \phi \, dr \, d\phi \, d\theta = \frac{4}{5} \pi a^5
+  \]
+
+### 9. 曲面面积计算
+- 若曲面方程为$z = f(x,y)$，则其表面积为：
+  \[
+  S = \iint_D \sqrt{1 + \left(\frac{\partial z}{\partial x}\right)^2 + \left(\frac{\partial z}{\partial y}\right)^2} \, dx \, dy
+  \]
+  - 例如：半球面的表面积计算需投影到$xOy$平面，并利用极坐标简化积分。
+</output1>
+</example1>
+
+<example2>
+<course2>
+C程序设计基础B
+</course2>
+<output2>
+## 指针与函数
+
+### 一、指针
+1. **指针的基本概念**
+   - 指针是专门存放地址的变量，属于指针类型。
+   - 指针变量存放的是某个数据的地址。
+   - 每个存储单元都有地址，系统通过地址管理内存。
+
+2. **指针变量的定义**
+   - 格式：`数据类型 *指针变量名`。
+   - 例如：`int *p` 定义一个指向整型数据的指针变量 `p`。
+   - 指针变量的数据类型决定了它能存放哪种类型数据的地址。
+
+3. **指针变量的初始化**
+   - 可以在定义时初始化：`int a = 8; int *p = &a;`。
+   - 也可以在程序中赋值：`p = &a;`。
+   - 指针变量不能直接赋值为普通变量，只能赋值为地址。
+
+4. **指针的引用**
+   - 取地址运算符：`&`，如 `&a` 获取变量 `a` 的地址。
+   - 指针运算符：`*`，如 `*p` 获取指针 `p` 指向的对象的值。
+   - 两者互逆：`*&a == a`，`&*p == p`。
+
+5. **指针与数组**
+   - 数组名是一个地址常量，代表数组的首地址。
+   - 指针可以指向数组的首地址：`int a[6]; int *p = a;`。
+   - 指针的加减运算：`p + i` 是数组元素 `a[i]` 的地址，`*(p + i)` 是 `a[i]` 的值。
+   - 指针可以像数组一样使用：`p[i]` 等价于 `a[i]`。
+
+6. **指针的运算**
+   - 指针加一不是简单的地址加一，而是加上指针类型的大小。
+   - 例如，`int *p` 的 `p + 1` 是地址加 4（`sizeof(int)`）。
+
+7. **指针的自增/自减**
+   - `*++p`：先移动指针，再取指向的值。
+   - `*p++`：先取指向的值，再移动指针。
+   - `++*p`：先对指向的值加一，再返回新值。
+   - `(*p)++`：先取指向的值，再对该值加一。
+
+### 二、函数
+1. **函数的基本概念**
+   - 函数是模块化程序设计的基本单位，完成特定功能。
+   - 函数可以反复调用，提高代码复用性。
+
+2. **函数的定义**
+   - 格式：
+     ```c
+     返回值类型 函数名(形式参数表) {
+         // 函数体
+     }
+     ```
+   - 例如：
+     ```c
+     double power(int x, int n) {
+         double p = 1.0;
+         for (int i = 1; i <= n; i++) p *= x;
+         return p;
+     }
+     ```
+
+3. **函数的调用**
+   - 调用形式：`函数名(实际参数)`。
+   - 实参与形参的数目、顺序、数据类型必须一致。
+   - 实参可以是常量、变量、表达式或函数调用。
+
+4. **函数的分类**
+   - 从使用角度看：
+     - 库函数：如 `printf`、`scanf`。
+     - 用户自定义函数：如 `fact`、`power`。
+   - 从形式上看：
+     - 无参函数：如 `void print_star()`。
+     - 有参函数：如 `double power(int x, int n)`。
+
+5. **函数的返回值**
+   - 通过 `return` 语句返回，返回值类型与函数类型一致。
+   - 无返回值时，函数类型为 `void`。
+
+6. **变量的作用域与生命周期**
+   - 局部变量：在函数内定义，函数结束后释放。
+   - 全局变量：在函数外定义，整个程序有效。
+   - 形参和实参同名但作用域不同。
+
+7. **模块化程序设计**
+   - 将复杂程序划分为多个功能独立的模块（函数）。
+   - 提高代码的可读性、可维护性和复用性。
+</output2>
+</example2>
+
+<example3>
+<course3>
+大学英语3
+</course3>
+<output3>
+## 农业新闻和四级考试题型
+
+### 1. 农业相关知识点
+      1.1 可持续性农业（Sustainability in Agriculture）
+      - 定义：$ \text{Sustainability} = \text{Sustain} + \text{Ability} $，指在满足当代需求的同时确保未来世代可延续的农业模式。
+      - 核心原则：从掠夺式开发（*extractive agriculture*）转向再生式农业（*regenerative agriculture*），强调土地资源的合理利用而非榨取。
+      - 例句：
+        - "We cannot squeeze out every last bit of harvest from the land."
+        - "Part of what we grow should be viewed as an investment in the soil, like a *savings account* for future generations."
+
+      1.2 商业性农业（Commercial Farming）
+      - 定义：以市场销售和盈利为目标的农业形式，使用现代技术、机械化灌溉和化肥。
+      - 关键特征：
+        - 大规模种植（*large-scale crops*）
+        - 依赖现代技术（*modern technologies and techniques*）
+        - 机械化生产（*machinery*）
+        - 化学肥料（*chemical fertilizers*）
+      - 例句：
+        - "Commercial farming is a type of farming that grows and raises crops to sell on the market to make money."
+        - "By means of modern technology and machinery, large-scale farming becomes efficient."
+
+      1.3 自给自足农业（Subsistence Farming）
+      - 定义：以家庭消费为主，不依赖市场销售的农业形式。
+      - 优势：
+        - 无需高额投资（*low input*）
+        - 降低运输成本（*less expense in transportation*）
+        - 门槛低（*no special skills or high education required*）
+      - 例句：
+        - "Subsistence farming provides ready food for the family, as production and consumption are direct and immediate."
+        - "Farms practicing subsistence farming do not require hiring workers, reducing labor costs."
+
+### 2. 四级考试听力考点分析
+      2.1 新闻报道题型（Section A）
+      - 常见同义替换：
+        | 原文关键词 | 替换表达 |
+        |------------|----------|
+        | shift      | transition |
+        | marked change | significant transformation |
+        | sustainable form | eco-friendly agriculture |
+      - 题型思路：
+        - 问题 1（主旨）：关注标题和首句中的 *shift* 或 *transformation*。
+        - 问题 2（原则）：重点听 *key principle* 和 *investment in the soil* 的类比（如 *savings account*）。
+        - 问题 3（补偿活动）：原文直接列举 *carbon storage, wildlife habitat, land beauty enhancement* 等。
+
+      2.2 对话题型（Section B）
+      - 常见同义替换：
+        | 原文表达 | 替换表达 |
+        |----------|----------|
+        | reduce expenses | cut costs |
+        | depend on | rely on |
+        | genetic modification | bioengineered feed |
+      - 题型思路：
+        - 问题 5（后果）：注意 *contaminated water* 与 *health risks* 的关联。
+        - 问题 6（问题）：原文提及 *toxic algae* 导致 *fish deaths* 和 *environmental damage*。
+
+### 3. 写作框架与表达
+      3.1 作文主题：农业现代化政策（*new agricultural policy*）
+      - 结构建议：
+        1. 引入背景（*large-scale mechanization*）
+        2. 对比传统与现代模式（*subsistence vs. commercial farming*）
+        3. 强调可持续性（*regenerative agriculture*）
+
+      3.2 高频短语与例句
+      - Sustainable agriculture
+        - "To meet the needs of the present while ensuring future generations can do the same."
+      - Commercial farming
+        - "Crops are grown using modern technologies and chemical fertilizers."
+      - Subsistence farming
+        - "Farmers produce enough food for personal consumption without market sales."
+
+### 4. 农业相关词汇补充
+      - 核心词汇：
+        - *Regenerative agriculture*（再生农业）
+        - *Extractive farming*（掠夺式农业）
+        - *Carbon sequestration*（碳储存）
+        - *Self-sufficiency*（自给自足）
+      - 单位换算：
+        - 1 公顷 ≈ 2.5 亩（精确值 2.471 亩）。
+</output3>
+</example3>

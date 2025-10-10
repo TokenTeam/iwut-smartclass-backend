@@ -33,8 +33,8 @@ type Job struct {
 func (j *Job) Execute() error {
 	var status string
 	var asrText string
+	var timeStamp string
 
-	// 创建实例
 	userInfoService := user.NewGetUserInfoService(j.Token, middleware.Logger)
 
 	// 获取用户信息
@@ -45,6 +45,8 @@ func (j *Job) Execute() error {
 	}
 
 	if j.Task == "new" && j.Asr == "" {
+		_ = j.SummarySvc.WriteStatus(j.SubID, "generating")
+
 		// 获取视频密钥
 		videoAuthService := course.NewVideoAuthService(j.Token, j.CourseID, j.VideoURL, middleware.Logger)
 		videoAuth, err := videoAuthService.VideoAuth(&userInfo)
@@ -119,9 +121,16 @@ func (j *Job) Execute() error {
 
 	if j.Task == "regenerate" {
 		status = "finished"
+		var err error
+
+		// 初始化Summary行
+		timeStamp, err = j.SummaryDbSvc.InitNewSummary(j.SubID, userInfo.Account)
+		if err != nil {
+			_ = j.SummarySvc.WriteStatus(j.SubID, status)
+			return err
+		}
 
 		// 读取 ASR 结果
-		var err error
 		asrText, err = j.AsrSvc.GetAsr(j.SubID)
 		if err != nil {
 			_ = j.SummarySvc.WriteStatus(j.SubID, status)
@@ -150,10 +159,20 @@ func (j *Job) Execute() error {
 	}
 
 	// 保存摘要
-	_, err = j.SummaryDbSvc.SaveSummary(j.SubID, userInfo.Account, summaryText, j.Config.OpenaiModel, token)
-	if err != nil {
-		_ = j.SummarySvc.WriteStatus(j.SubID, status)
-		return err
+	if j.Task == "new" && j.Asr == "" {
+		err = j.SummaryDbSvc.SaveSummary(j.SubID, userInfo.Account, summaryText, j.Config.OpenaiModel, token)
+		if err != nil {
+			_ = j.SummarySvc.WriteStatus(j.SubID, status)
+			return err
+		}
+	}
+
+	if j.Task == "regenerate" {
+		err = j.SummaryDbSvc.SaveUserSummary(j.SubID, userInfo.Account, timeStamp, summaryText, j.Config.OpenaiModel, token)
+		if err != nil {
+			_ = j.SummarySvc.WriteStatus(j.SubID, status)
+			return err
+		}
 	}
 
 	return nil

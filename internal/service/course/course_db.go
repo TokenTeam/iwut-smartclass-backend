@@ -4,8 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"iwut-smartclass-backend/internal/middleware"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type CourseDBService struct {
@@ -23,6 +24,12 @@ type Course struct {
 	Video    string            `json:"video"`
 	Asr      string            `json:"asr"`
 	Summary  map[string]string `json:"summary"`
+}
+
+type UserSummary struct {
+	Summary string
+	Model   string
+	Token   uint32
 }
 
 func NewCourseDbService(db *sql.DB) *CourseDBService {
@@ -77,4 +84,34 @@ func (s *CourseDBService) SaveVideo(subId int, video string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *CourseDBService) GetUserSummaryFromDb(subId int, user string) ([]UserSummary, error) {
+	query := `SELECT summary, model, token FROM summary WHERE sub_id = ? AND user = ? ORDER BY create_at DESC`
+	rows, err := s.Database.Query(query, subId, user)
+	if err != nil {
+		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to query user summary from database, subId: %d, user: %s: %v", subId, user, err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	var summaries []UserSummary
+	for rows.Next() {
+		var summary, model string
+		var token uint32
+
+		err := rows.Scan(&summary, &model, &token)
+		if err != nil {
+			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to scan user summary from database, subId: %d, user: %s: %v", subId, user, err))
+			return nil, err
+		}
+
+		summaries = append(summaries, UserSummary{
+			Summary: summary,
+			Model:   model,
+			Token:   token,
+		})
+	}
+
+	return summaries, nil
 }

@@ -62,13 +62,6 @@ func GenerateSummary(w http.ResponseWriter, r *http.Request) {
 			},
 		)
 
-		// 写入生成状态
-		err := generateSummaryService.WriteStatus(subId, "generating")
-		if err != nil {
-			util.WriteResponse(w, http.StatusInternalServerError, nil)
-			return
-		}
-
 		// 创建队列实例
 		summaryQueue := middleware.GetQueue("SummaryServiceQueue")
 		if summaryQueue == nil {

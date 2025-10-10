@@ -33,7 +33,7 @@ func NewLogger(cfg *config.Config) *Log {
 func (l *Log) Log(level, message string) {
 	if l.Config.Debug || level != "DEBUG" {
 		_, file, line, _ := runtime.Caller(2)
-		timestamp := time.Now().Format("2006-01-02 15:04:05.000")
+		timestamp := time.Now().Format(time.RFC3339)
 		color := setColor(level)
 		reset := "\033[0m"
 		logMessage := fmt.Sprintf("%s[%s] %s %s (%s:%d)%s", color, level, timestamp, message, filepath.Base(file), line, reset)
