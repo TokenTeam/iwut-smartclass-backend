@@ -21,15 +21,15 @@ type Log struct {
 	fileLog    *log.Logger
 }
 
-// NewLogger 创建日志记录器
 func NewLogger(cfg *config.Config) *Log {
 	logger := &Log{Config: cfg}
 	logger.splitLogFile()
-	go logger.scheduleLogSplit()
+	if cfg.LogSave {
+		go logger.scheduleLogSplit()
+	}
 	return logger
 }
 
-// Log 日志记录器
 func (l *Log) Log(level, message string) {
 	if l.Config.Debug || level != "DEBUG" {
 		_, file, line, _ := runtime.Caller(2)
@@ -38,7 +38,9 @@ func (l *Log) Log(level, message string) {
 		reset := "\033[0m"
 		logMessage := fmt.Sprintf("%s[%s] %s %s (%s:%d)%s", color, level, timestamp, message, filepath.Base(file), line, reset)
 		l.consoleLog.Println(logMessage)
-		l.fileLog.Printf("[%s] %s %s (%s:%d)", level, timestamp, message, filepath.Base(file), line)
+		if l.Config.LogSave {
+			l.fileLog.Printf("[%s] %s %s (%s:%d)", level, timestamp, message, filepath.Base(file), line)
+		}
 	}
 }
 
@@ -52,21 +54,22 @@ func (l *Log) HttpMiddleware(next http.Handler) http.Handler {
 
 // splitLogFile 切割日志文件
 func (l *Log) splitLogFile() {
+	if !l.Config.LogSave {
+		l.consoleLog = log.New(io.MultiWriter(os.Stdout), "", 0)
+		return
+	}
 	if l.file != nil {
 		l.file.Close()
 	}
-
 	logDir := "log"
 	if _, err := os.Stat(logDir); os.IsNotExist(err) {
 		os.Mkdir(logDir, 0755)
 	}
-
 	filename := filepath.Join(logDir, time.Now().Format("2006-01-02")+".log")
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		l.Log("ERROR", fmt.Sprintf("Failed to open log file: %v", err))
 	}
-
 	l.file = file
 	l.consoleLog = log.New(io.MultiWriter(os.Stdout), "", 0)
 	l.fileLog = log.New(file, "", 0)
@@ -84,7 +87,6 @@ func (l *Log) scheduleLogSplit() {
 	}
 }
 
-// setColor 设置输出颜色
 func setColor(level string) string {
 	switch level {
 	case "INFO":

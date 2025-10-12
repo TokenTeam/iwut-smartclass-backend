@@ -1,17 +1,19 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
 	Debug                bool
 	Port                 string
 	Database             string
+	LogSave              bool
 	SummaryWorkerCount   int
 	SummaryQueueSize     int
 	TencentSecretId      []string
@@ -31,6 +33,7 @@ func DefaultConfig() *Config {
 		Debug:                false,
 		Port:                 "8080",
 		Database:             "",
+		LogSave:              false,
 		SummaryWorkerCount:   2,
 		SummaryQueueSize:     20,
 		TencentSecretId:      []string{},
