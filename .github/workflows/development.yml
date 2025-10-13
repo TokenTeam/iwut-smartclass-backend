@@ -22,8 +22,7 @@ jobs:
       - name: Docker build and push
         run: |
           docker buildx build . \
-            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:dev \
-            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_CONTAINER_NAME }}:dev \
             --push
 
   deploy:
@@ -34,7 +33,7 @@ jobs:
     steps:
       - name: Docker pull
         run: |
-          sudo docker pull mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+          sudo docker pull mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_CONTAINER_NAME }}:dev
       - name: Deploy with docker run
         run: |
           sudo docker stop ${{ vars.DOCKER_CONTAINER_NAME }} || true
@@ -46,6 +45,8 @@ jobs:
             -e DEBUG="${{ vars.DEBUG }}" \
             -e DATABASE="${{ secrets.DATABASE }}" \
             -e LOG_SAVE="${{ vars.LOG_SAVE }}" \
+            -e SUMMARY_WORKER_COUNT="${{ vars.SUMMARY_WORKER_COUNT }}" \
+            -e SUMMARY_QUEUE_SIZE="${{ vars.SUMMARY_QUEUE_SIZE }}" \
             -e TENCENT_SECRET_ID="${{ secrets.TENCENT_SECRET_ID }}" \
             -e TENCENT_SECRET_KEY="${{ secrets.TENCENT_SECRET_KEY }}" \
             -e BUCKET_URL="${{ secrets.BUCKET_URL }}" \
@@ -55,7 +56,7 @@ jobs:
             -e INFO_SIMPLE="${{ secrets.INFO_SIMPLE }}" \
             -e GET_WEEK_SCHEDULES="${{ secrets.GET_WEEK_SCHEDULES }}" \
             -e SEARCH_LIVE_COURSE_LIST="${{ secrets.SEARCH_LIVE_COURSE_LIST }}" \
-            mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+            mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_CONTAINER_NAME }}:dev
       - name: Docker image prune
         run: |
           docker image prune -a -f
