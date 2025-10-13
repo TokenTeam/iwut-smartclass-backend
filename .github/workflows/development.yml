@@ -41,6 +41,7 @@ jobs:
           sudo docker rm ${{ vars.DOCKER_CONTAINER_NAME }} || true
           sudo docker run -d --name ${{ vars.DOCKER_CONTAINER_NAME }} \
             -p ${{ vars.DOCKER_CONTAINER_PORT }}:8080 \
+            -e TZ="Asia/Shanghai" \
             -e PORT="${{ vars.PORT }}" \
             -e DEBUG="${{ vars.DEBUG }}" \
             -e DATABASE="${{ secrets.DATABASE }}" \
