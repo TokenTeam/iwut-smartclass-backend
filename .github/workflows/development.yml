@@ -19,15 +19,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Docker build
+      - name: Docker build and push
         run: |
-          docker build . \
-          -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:dev \
-          -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:{{ github.sha }}
-      - name: Docker push
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:dev
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:{{ github.sha }}
+          docker buildx build . \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:dev \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }} \
+            --push
 
   deploy:
     needs: publish
@@ -37,7 +34,7 @@ jobs:
     steps:
       - name: Docker pull
         run: |
-          sudo docker pull mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:{{ github.sha }}
+          sudo docker pull mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
       - name: Deploy with docker run
         run: |
           sudo docker stop ${{ vars.DOCKER_CONTAINER_NAME }} || true
@@ -47,7 +44,7 @@ jobs:
             -e PORT="${{ vars.PORT }}" \
             -e DEBUG="${{ vars.DEBUG }}" \
             -e DATABASE="${{ secrets.DATABASE }}" \
-            -e LOG_SAVE="${{ secrets.LOG_SAVE }}" \
+            -e LOG_SAVE="${{ vars.LOG_SAVE }}" \
             -e TENCENT_SECRET_ID="${{ secrets.TENCENT_SECRET_ID }}" \
             -e TENCENT_SECRET_KEY="${{ secrets.TENCENT_SECRET_KEY }}" \
             -e BUCKET_URL="${{ secrets.BUCKET_URL }}" \
@@ -57,7 +54,7 @@ jobs:
             -e INFO_SIMPLE="${{ secrets.INFO_SIMPLE }}" \
             -e GET_WEEK_SCHEDULES="${{ secrets.GET_WEEK_SCHEDULES }}" \
             -e SEARCH_LIVE_COURSE_LIST="${{ secrets.SEARCH_LIVE_COURSE_LIST }}" \
-            mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:{{ github.sha }}
+            mirror.ccs.tencentyun.com/${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
       - name: Docker image prune
         run: |
           docker image prune -a -f

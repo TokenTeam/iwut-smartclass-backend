@@ -41,15 +41,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Docker build
+      - name: Docker build and push
         run: |
-          docker build . \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.ref_name }}
-      - name: Docker push
-        run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.ref_name }}
+          docker buildx build . \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest \
+            --tag ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.ref_name }} \
+            --push
 
   deploy:
     needs: publish
@@ -69,7 +66,7 @@ jobs:
             -e PORT="${{ vars.PORT }}" \
             -e DEBUG="${{ vars.DEBUG }}" \
             -e DATABASE="${{ secrets.DATABASE }}" \
-            -e LOG_SAVE="${{ secrets.LOG_SAVE }}" \
+            -e LOG_SAVE="${{ vars.LOG_SAVE }}" \
             -e TENCENT_SECRET_ID="${{ secrets.TENCENT_SECRET_ID }}" \
             -e TENCENT_SECRET_KEY="${{ secrets.TENCENT_SECRET_KEY }}" \
             -e BUCKET_URL="${{ secrets.BUCKET_URL }}" \
