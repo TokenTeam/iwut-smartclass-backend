@@ -14,7 +14,7 @@ jobs:
       - name: Get previous tag
         id: previous_tag
         run: |
-          echo "PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo '')" >> $GITHUB_ENV
+          echo "PREV_TAG=$(git tag --sort=-creatordate | grep -v "${{ github.ref_name }}" | head -n 1)" >> $GITHUB_ENV
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
@@ -30,6 +30,7 @@ jobs:
   publish:
     name: Build and push docker image
     runs-on: ubuntu-latest
+    environment: production
     needs: release
     steps:
       - name: Set up Docker Buildx
