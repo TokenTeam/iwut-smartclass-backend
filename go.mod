@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.1.29
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.39
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.1.47
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.70
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.0
