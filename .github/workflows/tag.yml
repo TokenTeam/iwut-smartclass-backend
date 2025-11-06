@@ -1,11 +1,9 @@
-name: Sync to CNB
+name: On tag
 on:
   workflow_dispatch:
   push:
-    branches:
-      - 'main'
     tags:
-      - 'v*'
+      - '*'
 
 jobs:
   cnb:
@@ -25,4 +23,5 @@ jobs:
             -e PLUGIN_USERNAME="cnb" \
             -e PLUGIN_PASSWORD=${{ secrets.CNB_SECRET }} \
             -e PLUGIN_FORCE="true" \
+            -e PLUGIN_PUSH_TAGS="true" \
             tencentcom/git-sync

@@ -38,6 +38,7 @@ main:
                 ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:dev
             query_instance: true
 
+$:
   tag_push:
     - services:
         - docker
