@@ -14,27 +14,27 @@ main:
             secret_id: ${tencentcloud_SECRET_ID}
             secret_key: ${tencentcloud_SECRET_KEY}
             region: ap-chengdu
-            instance_ids:
+            instance_ids: ${server_dev_INSTANCE_ID}
             script: |
-              sudo docker stop ${CNB_REPO_SLUG_LOWERCASE} || true
-              sudo docker rm ${CNB_REPO_SLUG_LOWERCASE} || true
-              sudo docker run -d --name ${CNB_REPO_SLUG_LOWERCASE} \
+              sudo docker stop ${CNB_REPO_NAME_LOWERCASE} || true
+              sudo docker rm ${CNB_REPO_NAME_LOWERCASE} || true
+              sudo docker run -d --name ${CNB_REPO_NAME_LOWERCASE} \
                 -p ${iwut_smartclass_backend_dev_DOCKER_CONTAINER_PORT}:8080 \
                 -e TZ="Asia/Shanghai" \
                 -e PORT="${iwut_smartclass_backend_dev_PORT}" \
                 -e DEBUG="${iwut_smartclass_backend_dev_DEBUG}" \
-                -e DATABASE="${secrets.DATABASE}" \
+                -e DATABASE="${iwut_smartclass_backend_dev_DATABASE}" \
                 -e LOG_SAVE="${iwut_smartclass_backend_dev_LOG_SAVE}" \
                 -e SUMMARY_WORKER_COUNT="${iwut_smartclass_backend_dev_SUMMARY_WORKER_COUNT}" \
                 -e SUMMARY_QUEUE_SIZE="${iwut_smartclass_backend_dev_SUMMARY_QUEUE_SIZE}" \
-                -e TENCENT_SECRET_ID="${secrets.TENCENT_SECRET_ID}" \
-                -e TENCENT_SECRET_KEY="${secrets.TENCENT_SECRET_KEY}" \
-                -e BUCKET_URL="${secrets.BUCKET_URL}" \
+                -e TENCENT_SECRET_ID="${iwut_smartclass_backend_dev_TENCENT_SECRET_ID}" \
+                -e TENCENT_SECRET_KEY="${iwut_smartclass_backend_dev_TENCENT_SECRET_KEY}" \
+                -e BUCKET_URL="${iwut_smartclass_backend_dev_BUCKET_URL}" \
                 -e OPENAI_ENDPOINT="${iwut_smartclass_backend_dev_OPENAI_ENDPOINT}" \
-                -e OPENAI_KEY="${secrets.OPENAI_KEY}" \
+                -e OPENAI_KEY="${iwut_smartclass_backend_dev_OPENAI_KEY}" \
                 -e OPENAI_MODEL="${iwut_smartclass_backend_dev_OPENAI_MODEL}" \
-                -e INFO_SIMPLE="${secrets.INFO_SIMPLE}" \
-                -e GET_WEEK_SCHEDULES="${secrets.GET_WEEK_SCHEDULES}" \
-                -e SEARCH_LIVE_COURSE_LIST="${secrets.SEARCH_LIVE_COURSE_LIST}" \
+                -e INFO_SIMPLE="${iwut_smartclass_backend_dev_INFO_SIMPLE}" \
+                -e GET_WEEK_SCHEDULES="${iwut_smartclass_backend_dev_GET_WEEK_SCHEDULES}" \
+                -e SEARCH_LIVE_COURSE_LIST="${iwut_smartclass_backend_dev_SEARCH_LIVE_COURSE_LIST}" \
                 ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:dev
             query_instance: true
