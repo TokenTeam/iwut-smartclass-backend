@@ -1,0 +1,40 @@
+main:
+  push:
+    - services:
+        - docker
+      imports: https://cnb.cool/TokenTeam/secrets/-/blob/main/env.yml
+      stages:
+        - name: docker build
+          script: docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:dev .
+        - name: docker push
+          script: docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:dev
+        - name: tcloud-cmd
+          image: tencentcom/tcloud-cmd
+          settings:
+            secret_id: ${tencentcloud_SECRET_ID}
+            secret_key: ${tencentcloud_SECRET_KEY}
+            region: ap-chengdu
+            instance_ids:
+            script: |
+              sudo docker stop ${CNB_REPO_SLUG_LOWERCASE} || true
+              sudo docker rm ${CNB_REPO_SLUG_LOWERCASE} || true
+              sudo docker run -d --name ${CNB_REPO_SLUG_LOWERCASE} \
+                -p ${iwut_smartclass_backend_dev_DOCKER_CONTAINER_PORT}:8080 \
+                -e TZ="Asia/Shanghai" \
+                -e PORT="${iwut_smartclass_backend_dev_PORT}" \
+                -e DEBUG="${iwut_smartclass_backend_dev_DEBUG}" \
+                -e DATABASE="${secrets.DATABASE}" \
+                -e LOG_SAVE="${iwut_smartclass_backend_dev_LOG_SAVE}" \
+                -e SUMMARY_WORKER_COUNT="${iwut_smartclass_backend_dev_SUMMARY_WORKER_COUNT}" \
+                -e SUMMARY_QUEUE_SIZE="${iwut_smartclass_backend_dev_SUMMARY_QUEUE_SIZE}" \
+                -e TENCENT_SECRET_ID="${secrets.TENCENT_SECRET_ID}" \
+                -e TENCENT_SECRET_KEY="${secrets.TENCENT_SECRET_KEY}" \
+                -e BUCKET_URL="${secrets.BUCKET_URL}" \
+                -e OPENAI_ENDPOINT="${iwut_smartclass_backend_dev_OPENAI_ENDPOINT}" \
+                -e OPENAI_KEY="${secrets.OPENAI_KEY}" \
+                -e OPENAI_MODEL="${iwut_smartclass_backend_dev_OPENAI_MODEL}" \
+                -e INFO_SIMPLE="${secrets.INFO_SIMPLE}" \
+                -e GET_WEEK_SCHEDULES="${secrets.GET_WEEK_SCHEDULES}" \
+                -e SEARCH_LIVE_COURSE_LIST="${secrets.SEARCH_LIVE_COURSE_LIST}" \
+                ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:dev
+            query_instance: true
