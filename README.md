@@ -4,8 +4,6 @@
 
 ```
 .
-├── .github
-│   └── workflows      # GitHub Actions workflows
 ├── assets
 │   └── assets         # Static resource files
 │       └── templates  # Templates
@@ -47,7 +45,7 @@ chmod +x ./server
 
 ## API Documentation
 
-### Get Course Information `GET /getCourse`
+### Get Course Information `POST /getCourse`
 
 **Body:**
 
