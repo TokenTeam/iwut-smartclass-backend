@@ -6,8 +6,8 @@ require (
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.3.9
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.9
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/asr v1.3.14
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.14
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.71
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
