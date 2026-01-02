@@ -1,6 +1,7 @@
 package summary
 
 import (
+	"context"
 	"fmt"
 	"iwut-smartclass-backend/assets"
 	"iwut-smartclass-backend/internal/asr"
@@ -13,6 +14,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Job struct {
@@ -31,6 +33,9 @@ type Job struct {
 }
 
 func (j *Job) Execute() error {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	defer cancel()
+
 	var status string
 	var asrText string
 	var timeStamp string
@@ -62,7 +67,9 @@ func (j *Job) Execute() error {
 		// 将视频转换为音频
 		audioID, err := j.ConvertSvc.GetAudioId(j.SubID)
 		if audioID == "" {
-			audioID, err = j.ConvertSvc.Convert(j.SubID, video)
+			convertCtx, convertCancel := context.WithTimeout(ctx, 5*time.Minute)
+			audioID, err = j.ConvertSvc.Convert(convertCtx, j.SubID, video)
+			convertCancel()
 			if err != nil {
 				_ = j.SummarySvc.WriteStatus(j.SubID, status)
 				_ = j.ConvertSvc.SaveAudioId(j.SubID, audioID)

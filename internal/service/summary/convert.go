@@ -1,6 +1,7 @@
 package summary
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -21,7 +22,7 @@ func NewConvertService(db *sql.DB) *ConvertService {
 }
 
 // Convert 将视频转换为音频文件
-func (s *ConvertService) Convert(subId int, videoFile string) (string, error) {
+func (s *ConvertService) Convert(ctx context.Context, subId int, videoFile string) (string, error) {
 	// 生成音频文件名
 	audioID := uuid.New().String()
 	audioFileName := audioID + ".aac"
@@ -36,7 +37,7 @@ func (s *ConvertService) Convert(subId int, videoFile string) (string, error) {
 	}
 
 	// 将视频转换为音频
-	err := util.ConvertVideoToAudio(videoFile, audioFilePath)
+	err := util.ConvertVideoToAudio(ctx, videoFile, audioFilePath)
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %v", err))
 		// 撤销生成状态
