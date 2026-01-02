@@ -10,30 +10,30 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o server ./cmd && upx -9 server
 
-FROM alpine:latest
-
-RUN apk add --no-cache ffmpeg
+FROM gcr.io/distroless/static-debian13
 
 WORKDIR /app
 
+COPY --from=mwader/static-ffmpeg /ffmpeg /usr/local/bin/
+
 COPY --from=builder /app/server .
 
-ENV TZ="Asia/Shanghai"
-ENV PORT=""
-ENV DEBUG=""
-ENV DATABASE=""
-ENV LOG_SAVE=""
-ENV SUMMARY_WORKER_COUNT=""
-ENV SUMMARY_QUEUE_SIZE=""
-ENV TENCENT_SECRET_ID=""
-ENV TENCENT_SECRET_KEY=""
-ENV BUCKET_URL=""
-ENV OPENAI_ENDPOINT=""
-ENV OPENAI_KEY=""
-ENV OPENAI_MODEL=""
-ENV INFO_SIMPLE=""
-ENV GET_WEEK_SCHEDULES=""
-ENV SEARCH_LIVE_COURSE_LIST=""
+ENV TZ="Asia/Shanghai" \
+    PORT="" \
+    DEBUG="" \
+    DATABASE="" \
+    LOG_SAVE="" \
+    SUMMARY_WORKER_COUNT="" \
+    SUMMARY_QUEUE_SIZE="" \
+    TENCENT_SECRET_ID="" \
+    TENCENT_SECRET_KEY="" \
+    BUCKET_URL="" \
+    OPENAI_ENDPOINT="" \
+    OPENAI_KEY="" \
+    OPENAI_MODEL="" \
+    INFO_SIMPLE="" \
+    GET_WEEK_SCHEDULES="" \
+    SEARCH_LIVE_COURSE_LIST=""
 
 EXPOSE 8080
 
