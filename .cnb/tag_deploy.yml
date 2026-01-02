@@ -1,0 +1,10 @@
+environments:
+  - name: production
+    description: Production environment
+    env:
+      name: production
+      tag_name: $CNB_BRANCH
+    permissions:
+      roles:
+        - owner
+        - master

@@ -1,64 +1,77 @@
-.job: &job
-  services:
-    - docker
-  stages:
-    - name: docker build
-      script: docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag} .
-    - name: docker push
-      script: docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag}
-    - name: Deploy
-      image: tencentcom/tcloud-cmd
-      imports:
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/tcloud.yml
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/iwut-smartclass.yml
-      settings:
-        secret_id: ${secret_id}
-        secret_key: ${secret_key}
-        region: ap-chengdu
-        instance_ids: ${instance_ids}
-        script: |
-          sudo docker stop ${CNB_REPO_NAME_LOWERCASE} || true
-          sudo docker rm ${CNB_REPO_NAME_LOWERCASE} || true
-          sudo docker run -d --name ${CNB_REPO_NAME_LOWERCASE} \
-            -p ${default_DOCKER_CONTAINER_PORT}:8080 \
-            -e TZ="Asia/Shanghai" \
-            -e DEBUG="${DEBUG}" \
-            -e DATABASE="${DATABASE}" \
-            -e LOG_SAVE="${LOG_SAVE}" \
-            -e SUMMARY_WORKER_COUNT="${default_SUMMARY_WORKER_COUNT}" \
-            -e SUMMARY_QUEUE_SIZE="${default_SUMMARY_QUEUE_SIZE}" \
-            -e TENCENT_SECRET_ID="${default_TENCENT_SECRET_ID}" \
-            -e TENCENT_SECRET_KEY="${default_TENCENT_SECRET_KEY}" \
-            -e BUCKET_URL="${default_BUCKET_URL}" \
-            -e OPENAI_ENDPOINT="${default_OPENAI_ENDPOINT}" \
-            -e OPENAI_KEY="${default_OPENAI_KEY}" \
-            -e OPENAI_MODEL="${default_OPENAI_MODEL}" \
-            -e INFO_SIMPLE="${default_INFO_SIMPLE}" \
-            -e GET_WEEK_SCHEDULES="${default_GET_WEEK_SCHEDULES}" \
-            -e SEARCH_LIVE_COURSE_LIST="${default_SEARCH_LIVE_COURSE_LIST}" \
-            ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag}
-        query_instance: true
+.common: &common
+  imports:
+    - https://cnb.cool/TokenTeam/secrets/-/blob/main/tcloud.yml
+    - https://cnb.cool/TokenTeam/secrets/-/blob/main/iwut-smartclass.yml
+
+.step_build_and_push: &step_build_and_push
+  name: build and push
+  script: |
+    docker build -t ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag} .
+    docker push ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag}
+
+.step_deploy: &step_deploy
+  name: deploy
+  image: tencentcom/tcloud-cmd
+  settings:
+    secret_id: ${secret_id}
+    secret_key: ${secret_key}
+    region: ap-chengdu
+    instance_ids: ${instance_ids}
+    script: |
+      sudo docker stop ${CNB_REPO_NAME_LOWERCASE} || true
+      sudo docker rm ${CNB_REPO_NAME_LOWERCASE} || true
+      sudo docker run -d --name ${CNB_REPO_NAME_LOWERCASE} \
+        -p ${default_DOCKER_CONTAINER_PORT}:8080 \
+        -e TZ="Asia/Shanghai" \
+        -e DEBUG="${DEBUG}" \
+        -e DATABASE="${DATABASE}" \
+        -e LOG_SAVE="${LOG_SAVE}" \
+        -e SUMMARY_WORKER_COUNT="${default_SUMMARY_WORKER_COUNT}" \
+        -e SUMMARY_QUEUE_SIZE="${default_SUMMARY_QUEUE_SIZE}" \
+        -e TENCENT_SECRET_ID="${default_TENCENT_SECRET_ID}" \
+        -e TENCENT_SECRET_KEY="${default_TENCENT_SECRET_KEY}" \
+        -e BUCKET_URL="${default_BUCKET_URL}" \
+        -e OPENAI_ENDPOINT="${default_OPENAI_ENDPOINT}" \
+        -e OPENAI_KEY="${default_OPENAI_KEY}" \
+        -e OPENAI_MODEL="${default_OPENAI_MODEL}" \
+        -e INFO_SIMPLE="${default_INFO_SIMPLE}" \
+        -e GET_WEEK_SCHEDULES="${default_GET_WEEK_SCHEDULES}" \
+        -e SEARCH_LIVE_COURSE_LIST="${default_SEARCH_LIVE_COURSE_LIST}" \
+        ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag}
+    query_instance: true
+
 main:
   push:
-    - imports:
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/tcloud.yml
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/iwut-smartclass.yml
+    - <<: *common
       env:
         instance_ids: ${server_dev}
         image_tag: dev
         DEBUG: ${dev_DEBUG}
         DATABASE: ${dev_DATABASE}
         LOG_SAVE: ${dev_LOG_SAVE}
-      <<: *job
+      services:
+        - docker
+      stages:
+        - <<: *step_build_and_push
+        - <<: *step_deploy
+
 "*":
   tag_push:
-    - imports:
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/tcloud.yml
-        - https://cnb.cool/TokenTeam/secrets/-/blob/main/iwut-smartclass.yml
+    - <<: *common
+      env:
+        image_tag: latest
+      services:
+        - docker
+      stages:
+        - <<: *step_build_and_push
+
+  tag_deploy.production:
+    - <<: *common
       env:
         instance_ids: ${server_prod}
         image_tag: latest
         DEBUG: ${prod_DEBUG}
         DATABASE: ${prod_DATABASE}
         LOG_SAVE: ${prod_LOG_SAVE}
-      <<: *job
+      stages:
+        - <<: *step_deploy
