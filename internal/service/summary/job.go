@@ -25,11 +25,23 @@ type Job struct {
 	CourseName   string
 	VideoURL     string
 	Asr          string
-	SummarySvc   *Service
-	ConvertSvc   *ConvertService
-	AsrSvc       *AsrDBService
-	SummaryDbSvc *LlmDBService
-	Config       *config.Config
+	SummarySvc   *Service        `json:"-"`
+	ConvertSvc   *ConvertService `json:"-"`
+	AsrSvc       *AsrDBService   `json:"-"`
+	SummaryDbSvc *LlmDBService   `json:"-"`
+	Config       *config.Config  `json:"-"`
+}
+
+func (j *Job) GetID() string {
+	return fmt.Sprintf("summary-%d-%d", j.SubID, time.Now().UnixNano())
+}
+
+func (j *Job) GetData() interface{} {
+	return j
+}
+
+func (j *Job) GetType() string {
+	return "summary"
 }
 
 func (j *Job) Execute() error {
@@ -79,7 +91,7 @@ func (j *Job) Execute() error {
 		}
 
 		audioFileName := audioID + ".aac"
-		audioFilePath := filepath.Join("data", "audio", audioFileName)
+		audioFilePath := filepath.Join("temp", "audio", audioFileName)
 
 		// 上传到 COS
 		cosService, err := cos.NewCosService(j.Config.TencentSecretId[0], j.Config.TencentSecretKey[0], j.Config.BucketUrl)

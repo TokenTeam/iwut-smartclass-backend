@@ -22,12 +22,9 @@
 go.work
 go.work.sum
 
-# .env file
 .env
-
-# Package
 pkg
-
-# Log
 log
 *.log
+data/
+temp/

@@ -26,7 +26,7 @@ func (s *ConvertService) Convert(ctx context.Context, subId int, videoFile strin
 	// 生成音频文件名
 	audioID := uuid.New().String()
 	audioFileName := audioID + ".aac"
-	audioFilePath := filepath.Join("data", "audio", audioFileName)
+	audioFilePath := filepath.Join("temp", "audio", audioFileName)
 
 	// 创建目录
 	if err := os.MkdirAll(filepath.Dir(audioFilePath), 0755); err != nil {

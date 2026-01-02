@@ -37,4 +37,6 @@ ENV TZ="Asia/Shanghai" \
 
 EXPOSE 8080
 
+VOLUME ["/app/data"]
+
 CMD ["./server"]
