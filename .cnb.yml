@@ -38,6 +38,7 @@
         -e GET_WEEK_SCHEDULES="${default_GET_WEEK_SCHEDULES}" \
         -e SEARCH_LIVE_COURSE_LIST="${default_SEARCH_LIVE_COURSE_LIST}" \
         ${CNB_DOCKER_REGISTRY}/${CNB_REPO_SLUG_LOWERCASE}:${image_tag}
+      sudo docker image prune -a -f
     query_instance: true
 
 main:
