@@ -3,8 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
-	"iwut-smartclass-backend/internal/config"
-	"iwut-smartclass-backend/internal/middleware"
+	"iwut-smartclass-backend/internal/infrastructure/config"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -26,15 +25,13 @@ func NewDB(cfg *config.Config) error {
 	// 使用 GORM 连接数据库
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] GORM connect failed: %v", err))
-		return err
+		return fmt.Errorf("[DB] GORM connect failed: %w", err)
 	}
 
 	// 获取底层的 sql.DB 以配置连接池参数
 	sqlDB, err := gormDB.DB()
 	if err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to get underlying sql.DB: %v", err))
-		return err
+		return fmt.Errorf("[DB] Failed to get underlying sql.DB: %w", err)
 	}
 
 	// 配置连接池参数
@@ -51,20 +48,16 @@ func NewDB(cfg *config.Config) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err = sqlDB.PingContext(ctx); err != nil {
-		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to ping MySQL: %v", err))
-		return err
+		return fmt.Errorf("[DB] Failed to ping MySQL: %w", err)
 	}
-	elapsed := time.Since(start)
-	middleware.Logger.Log("INFO", fmt.Sprintf("[DB] Connected to MySQL in %s", elapsed))
+	_ = time.Since(start)
 
 	// 自动迁移表结构
 	for _, s := range Structs {
 		if err = gormDB.AutoMigrate(s); err != nil {
-			middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] AutoMigrate failed: %v", err))
-			return err
+			return fmt.Errorf("[DB] AutoMigrate failed: %w", err)
 		}
 	}
-	middleware.Logger.Log("INFO", "[DB] AutoMigrate completed")
 
 	dbInstance = &MySQL{Database: gormDB}
 	return nil
@@ -105,11 +98,5 @@ func PingDB() error {
 
 // EnsureConnection 确保数据库连接健康，如果连接失败则尝试重新连接
 func EnsureConnection() error {
-	if err := PingDB(); err != nil {
-		middleware.Logger.Log("WARN", fmt.Sprintf("[DB] Connection unhealthy, attempting to reconnect: %v", err))
-		// 尝试ping，如果失败则记录错误，但不强制重连（让连接池自己处理）
-		// 连接池会自动处理失效的连接
-		return err
-	}
-	return nil
+	return PingDB()
 }
