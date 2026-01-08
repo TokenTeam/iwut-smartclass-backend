@@ -2,22 +2,22 @@ package summary
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"iwut-smartclass-backend/internal/middleware"
 	"iwut-smartclass-backend/internal/util"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ConvertService struct {
 	Service
 }
 
-func NewConvertService(db *sql.DB) *ConvertService {
+func NewConvertService(db *gorm.DB) *ConvertService {
 	return &ConvertService{Service{Database: db}}
 }
 
@@ -46,34 +46,59 @@ func (s *ConvertService) Convert(ctx context.Context, subId int, videoFile strin
 	}
 
 	// 将 audioID 写入数据库
-	_ = s.SaveAudioId(subId, audioID)
+	_ = s.SaveAudioId(ctx, subId, audioID)
 
 	return audioID, nil
 }
 
 // GetAudioId 从数据库中获取 audioID
-func (s *ConvertService) GetAudioId(subId int) (string, error) {
-	query := `SELECT audio_id FROM course WHERE sub_id = ?`
-	row := s.Database.QueryRow(query, subId)
-	var audioID sql.NullString
-	err := row.Scan(&audioID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			middleware.Logger.Log("DEBUG", fmt.Sprintf("Could not find course data in database, subId: %d: %v", subId, err))
-			return "", fmt.Errorf("sql: no rows in result set")
-		}
-		return "", err
+func (s *ConvertService) GetAudioId(ctx context.Context, subId int) (string, error) {
+	// 如果上下文没有超时，添加默认超时控制
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
 	}
-	if audioID.Valid {
-		return audioID.String, nil
+
+	var result struct {
+		AudioID *string
+	}
+
+	dbResult := s.Database.WithContext(ctx).Raw(
+		`SELECT audio_id FROM course WHERE sub_id = ?`,
+		subId,
+	).Scan(&result)
+
+	if dbResult.Error != nil {
+		return "", dbResult.Error
+	}
+
+	// 检查是否找到记录
+	if dbResult.RowsAffected == 0 {
+		middleware.Logger.Log("DEBUG", fmt.Sprintf("Could not find course data in database, subId: %d", subId))
+		return "", fmt.Errorf("sql: no rows in result set")
+	}
+
+	if result.AudioID != nil {
+		return *result.AudioID, nil
 	}
 	return "", nil
 }
 
 // SaveAudioId 将 audioID 写入数据库
-func (s *ConvertService) SaveAudioId(subId int, audioID string) error {
-	query := `UPDATE course SET audio_id = ? WHERE sub_id = ?`
-	_, err := s.Database.Exec(query, audioID, subId)
+func (s *ConvertService) SaveAudioId(ctx context.Context, subId int, audioID string) error {
+	// 如果上下文没有超时，添加默认超时控制
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, 10*time.Second)
+		defer cancel()
+	}
+
+	err := s.Database.WithContext(ctx).Exec(
+		`UPDATE course SET audio_id = ? WHERE sub_id = ?`,
+		audioID, subId,
+	).Error
+
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database, subId: %d: %v", subId, err))
 		return err

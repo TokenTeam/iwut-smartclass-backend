@@ -1,16 +1,16 @@
 package course
 
 import (
-	"database/sql"
-	"errors"
+	"context"
 	"fmt"
 	"iwut-smartclass-backend/internal/middleware"
+	"time"
 
-	_ "github.com/go-sql-driver/mysql"
+	"gorm.io/gorm"
 )
 
 type CourseDBService struct {
-	Database *sql.DB
+	Database *gorm.DB
 }
 
 type Course struct {
@@ -32,31 +32,85 @@ type UserSummary struct {
 	Token   uint32
 }
 
-func NewCourseDbService(db *sql.DB) *CourseDBService {
+func NewCourseDbService(db *gorm.DB) *CourseDBService {
 	return &CourseDBService{Database: db}
 }
 
 // GetCourseDataFromDb 从数据库中获取课程数据
 func (s *CourseDBService) GetCourseDataFromDb(subId int) (Course, error) {
 	var course Course
-	query := `SELECT sub_id, course_id, name, teacher, location, date, time, video, asr, summary_status, summary_data, model, token, summary_user FROM course WHERE sub_id = ?`
-	row := s.Database.QueryRow(query, subId)
-	var video, asr, summaryStatus, summaryData, model, token, summaryUser sql.NullString
-	err := row.Scan(&course.SubId, &course.CourseId, &course.Name, &course.Teacher, &course.Location, &course.Date, &course.Time, &video, &asr, &summaryStatus, &summaryData, &model, &token, &summaryUser)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, subId: %d: %v", subId, err))
-			return Course{}, fmt.Errorf("sql: no rows in result set")
-		}
-		return Course{}, err
+
+	// 添加超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 使用 GORM Raw SQL 查询
+	var result struct {
+		SubId         int
+		CourseId      int
+		Name          string
+		Teacher       string
+		Location      string
+		Date          string
+		Time          string
+		Video         *string
+		Asr           *string
+		SummaryStatus *string
+		SummaryData   *string
+		Model         *string
+		Token         *uint32
+		SummaryUser   *string
 	}
-	course.Video = video.String
-	course.Asr = asr.String
+
+	dbResult := s.Database.WithContext(ctx).Raw(
+		`SELECT sub_id, course_id, name, teacher, location, date, time, video, asr, summary_status, summary_data, model, token, summary_user FROM course WHERE sub_id = ?`,
+		subId,
+	).Scan(&result)
+
+	if dbResult.Error != nil {
+		return Course{}, dbResult.Error
+	}
+
+	// 检查是否找到记录（GORM Raw Scan 在找不到记录时不会返回错误，但 RowsAffected 会是 0）
+	if dbResult.RowsAffected == 0 {
+		middleware.Logger.Log("DEBUG", fmt.Sprintf("[DB] Could not find course data in database, subId: %d", subId))
+		return Course{}, fmt.Errorf("sql: no rows in result set")
+	}
+
+	course.SubId = result.SubId
+	course.CourseId = result.CourseId
+	course.Name = result.Name
+	course.Teacher = result.Teacher
+	course.Location = result.Location
+	course.Date = result.Date
+	course.Time = result.Time
+
+	if result.Video != nil {
+		course.Video = *result.Video
+	}
+	if result.Asr != nil {
+		course.Asr = *result.Asr
+	}
+
+	var status, data, model, token string
+	if result.SummaryStatus != nil {
+		status = *result.SummaryStatus
+	}
+	if result.SummaryData != nil {
+		data = *result.SummaryData
+	}
+	if result.Model != nil {
+		model = *result.Model
+	}
+	if result.Token != nil {
+		token = fmt.Sprintf("%d", *result.Token)
+	}
+
 	course.Summary = map[string]string{
-		"status": summaryStatus.String,
-		"data":   summaryData.String,
-		"model":  model.String,
-		"token":  token.String,
+		"status": status,
+		"data":   data,
+		"model":  model,
+		"token":  token,
 	}
 	middleware.Logger.Log("DEBUG", fmt.Sprintf("Course data found in database, subId: %d", subId))
 	return course, nil
@@ -64,8 +118,15 @@ func (s *CourseDBService) GetCourseDataFromDb(subId int) (Course, error) {
 
 // SaveCourseDataToDb 将课程数据写入数据库
 func (s *CourseDBService) SaveCourseDataToDb(course Course) error {
-	query := `INSERT INTO course (sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data, model, token, summary_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err := s.Database.Exec(query, course.SubId, course.CourseId, course.Name, course.Teacher, course.Location, course.Date, course.Time, course.Video, course.Summary["status"], course.Summary["data"], course.Summary["model"], course.Summary["token"], "")
+	// 添加超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := s.Database.WithContext(ctx).Exec(
+		`INSERT INTO course (sub_id, course_id, name, teacher, location, date, time, video, summary_status, summary_data, model, token, summary_user) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		course.SubId, course.CourseId, course.Name, course.Teacher, course.Location, course.Date, course.Time, course.Video, course.Summary["status"], course.Summary["data"], course.Summary["model"], course.Summary["token"], "",
+	).Error
+
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] %v", err))
 		middleware.Logger.Log("ERROR", fmt.Sprintf("[DB] Failed to write course data to database, CourseId: %d, subId: %d: %v", course.CourseId, course.SubId, err))
@@ -77,8 +138,15 @@ func (s *CourseDBService) SaveCourseDataToDb(course Course) error {
 
 // SaveVideo 将 Video 内容写入数据库
 func (s *CourseDBService) SaveVideo(subId int, video string) error {
-	query := `UPDATE course SET video = ? WHERE sub_id = ?`
-	_, err := s.Database.Exec(query, video, subId)
+	// 添加超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := s.Database.WithContext(ctx).Exec(
+		`UPDATE course SET video = ? WHERE sub_id = ?`,
+		video, subId,
+	).Error
+
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to update database, subId: %d: %v", subId, err))
 		return err
@@ -87,29 +155,32 @@ func (s *CourseDBService) SaveVideo(subId int, video string) error {
 }
 
 func (s *CourseDBService) GetUserSummaryFromDb(subId int, user string) ([]UserSummary, error) {
-	query := `SELECT summary, model, token FROM summary WHERE sub_id = ? AND user = ? ORDER BY create_at DESC`
-	rows, err := s.Database.Query(query, subId, user)
+	// 添加超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var results []struct {
+		Summary string
+		Model   string
+		Token   uint32
+	}
+
+	err := s.Database.WithContext(ctx).Raw(
+		`SELECT summary, model, token FROM summary WHERE sub_id = ? AND user = ? ORDER BY create_at DESC`,
+		subId, user,
+	).Scan(&results).Error
+
 	if err != nil {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to query user summary from database, subId: %d, user: %s: %v", subId, user, err))
 		return nil, err
 	}
-	defer rows.Close()
 
 	var summaries []UserSummary
-	for rows.Next() {
-		var summary, model string
-		var token uint32
-
-		err := rows.Scan(&summary, &model, &token)
-		if err != nil {
-			middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to scan user summary from database, subId: %d, user: %s: %v", subId, user, err))
-			return nil, err
-		}
-
+	for _, result := range results {
 		summaries = append(summaries, UserSummary{
-			Summary: summary,
-			Model:   model,
-			Token:   token,
+			Summary: result.Summary,
+			Model:   result.Model,
+			Token:   result.Token,
 		})
 	}
 

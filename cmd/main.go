@@ -44,7 +44,14 @@ func main() {
 		middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to initialize database: %v", err))
 		return
 	}
-	defer database.GetDB().Close()
+	defer func() {
+		if db := database.GetDB(); db != nil {
+			sqlDB, err := db.DB()
+			if err == nil {
+				sqlDB.Close()
+			}
+		}
+	}()
 
 	// 初始化工作队列
 	middleware.InitQueues(cfg)

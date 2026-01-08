@@ -77,14 +77,14 @@ func (j *Job) Execute() error {
 		video := fmt.Sprintf("%s?%s", j.VideoURL, videoAuth)
 
 		// 将视频转换为音频
-		audioID, err := j.ConvertSvc.GetAudioId(j.SubID)
+		audioID, err := j.ConvertSvc.GetAudioId(ctx, j.SubID)
 		if audioID == "" {
 			convertCtx, convertCancel := context.WithTimeout(ctx, 5*time.Minute)
 			audioID, err = j.ConvertSvc.Convert(convertCtx, j.SubID, video)
 			convertCancel()
 			if err != nil {
 				_ = j.SummarySvc.WriteStatus(j.SubID, status)
-				_ = j.ConvertSvc.SaveAudioId(j.SubID, audioID)
+				_ = j.ConvertSvc.SaveAudioId(ctx, j.SubID, audioID)
 				middleware.Logger.Log("ERROR", fmt.Sprintf("Failed to convert video to audio: %v", err))
 				return err
 			}
