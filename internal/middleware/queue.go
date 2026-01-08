@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"iwut-smartclass-backend/internal/infrastructure/config"
-	"iwut-smartclass-backend/internal/infrastructure/logger"
+	loggerPkg "iwut-smartclass-backend/internal/infrastructure/logger"
 	"os"
 	"path/filepath"
 	"sync"
@@ -30,7 +30,7 @@ type WorkQueue struct {
 	shutdownChan   chan struct{}        // 关闭信号通道
 	persistenceDir string               // 持久化目录
 	jobLoaders     map[string]JobLoader // Job 加载器
-	logger         logger.Logger        // 日志
+	logger         loggerPkg.Logger     // 日志
 }
 
 type JobLoader func([]byte, *config.Config) (Job, error)
@@ -41,7 +41,7 @@ var (
 	globalLoaders = make(map[string]JobLoader)
 )
 
-func NewWorkQueue(name string, workerCount int, queueSize int, logger logger.Logger) *WorkQueue {
+func NewWorkQueue(name string, workerCount int, queueSize int, logger loggerPkg.Logger) *WorkQueue {
 	queueMutex.Lock()
 	defer queueMutex.Unlock()
 
@@ -52,7 +52,7 @@ func NewWorkQueue(name string, workerCount int, queueSize int, logger logger.Log
 	// 创建持久化目录
 	persistenceDir := filepath.Join("data", "queues", name)
 	if err := os.MkdirAll(persistenceDir, 0755); err != nil {
-		logger.Error("failed to create persistence dir", logger.String("error", err.Error()))
+		logger.Error("failed to create persistence dir", loggerPkg.String("error", fmt.Sprintf("%v", err)))
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -75,7 +75,7 @@ func NewWorkQueue(name string, workerCount int, queueSize int, logger logger.Log
 	}
 
 	queues[name] = queue
-	logger.Info("created work queue", logger.String("name", name), logger.String("workers", fmt.Sprintf("%d", workerCount)))
+	logger.Info("created work queue", loggerPkg.String("name", name), loggerPkg.String("workers", fmt.Sprintf("%d", workerCount)))
 
 	return queue
 }
@@ -89,7 +89,7 @@ func (q *WorkQueue) RegisterLoader(jobType string, loader JobLoader) {
 }
 
 func (q *WorkQueue) Start(cfg *config.Config) {
-	q.logger.Info("starting work queue", logger.String("name", q.name))
+	q.logger.Info("starting work queue", loggerPkg.String("name", q.name))
 
 	for i := 0; i < q.workerCount; i++ {
 		q.wg.Add(1)
@@ -103,7 +103,7 @@ func (q *WorkQueue) Start(cfg *config.Config) {
 func (q *WorkQueue) Recover(cfg *config.Config) {
 	files, err := os.ReadDir(q.persistenceDir)
 	if err != nil {
-		q.logger.Error("failed to read persistence dir", logger.String("error", err.Error()))
+		q.logger.Error("failed to read persistence dir", loggerPkg.String("error", err.Error()))
 		return
 	}
 
@@ -115,7 +115,7 @@ func (q *WorkQueue) Recover(cfg *config.Config) {
 
 		content, err := os.ReadFile(filepath.Join(q.persistenceDir, file.Name()))
 		if err != nil {
-			q.logger.Error("failed to read job file", logger.String("file", file.Name()), logger.String("error", err.Error()))
+			q.logger.Error("failed to read job file", loggerPkg.String("file", file.Name()), loggerPkg.String("error", err.Error()))
 			continue
 		}
 
@@ -124,19 +124,19 @@ func (q *WorkQueue) Recover(cfg *config.Config) {
 			Data json.RawMessage `json:"data"`
 		}
 		if err := json.Unmarshal(content, &wrapper); err != nil {
-			q.logger.Error("failed to unmarshal job wrapper", logger.String("file", file.Name()), logger.String("error", err.Error()))
+			q.logger.Error("failed to unmarshal job wrapper", loggerPkg.String("file", file.Name()), loggerPkg.String("error", err.Error()))
 			continue
 		}
 
 		loader, ok := q.jobLoaders[wrapper.Type]
 		if !ok {
-			q.logger.Warn("no loader found for job type", logger.String("type", wrapper.Type))
+			q.logger.Warn("no loader found for job type", loggerPkg.String("type", wrapper.Type))
 			continue
 		}
 
 		job, err := loader(wrapper.Data, cfg)
 		if err != nil {
-			q.logger.Error("failed to load job", logger.String("file", file.Name()), logger.String("error", err.Error()))
+			q.logger.Error("failed to load job", loggerPkg.String("file", file.Name()), loggerPkg.String("error", err.Error()))
 			continue
 		}
 
@@ -144,7 +144,7 @@ func (q *WorkQueue) Recover(cfg *config.Config) {
 		count++
 	}
 	if count > 0 {
-		q.logger.Info("recovered jobs", logger.String("count", fmt.Sprintf("%d", count)), logger.String("queue", q.name))
+		q.logger.Info("recovered jobs", loggerPkg.String("count", fmt.Sprintf("%d", count)), loggerPkg.String("queue", q.name))
 	}
 }
 
@@ -169,12 +169,12 @@ func (q *WorkQueue) deleteJob(job Job) error {
 func (q *WorkQueue) Worker(id int) {
 	defer q.wg.Done()
 	workerName := fmt.Sprintf("%s-worker-%d", q.name, id)
-	q.logger.Debug("started worker", logger.String("worker", workerName))
+	q.logger.Debug("started worker", loggerPkg.String("worker", workerName))
 
 	for {
 		select {
 		case <-q.ctx.Done():
-			q.logger.Debug("shutting down worker", logger.String("worker", workerName))
+			q.logger.Debug("shutting down worker", loggerPkg.String("worker", workerName))
 			return
 		case job, ok := <-q.jobQueue:
 			if !ok {
@@ -193,12 +193,12 @@ func (q *WorkQueue) Worker(id int) {
 			<-q.workerPool
 
 			if err != nil {
-				q.logger.Error("job failed", logger.String("worker", workerName), logger.String("duration", duration.String()), logger.String("error", err.Error()))
+				q.logger.Error("job failed", loggerPkg.String("worker", workerName), loggerPkg.String("duration", duration.String()), loggerPkg.String("error", err.Error()))
 			} else {
-				q.logger.Debug("job completed", logger.String("worker", workerName), logger.String("duration", duration.String()))
+				q.logger.Debug("job completed", loggerPkg.String("worker", workerName), loggerPkg.String("duration", duration.String()))
 				// 任务成功完成后删除持久化文件
 				if deleteErr := q.deleteJob(job); deleteErr != nil {
-					q.logger.Warn("failed to delete persisted job", logger.String("error", deleteErr.Error()))
+					q.logger.Warn("failed to delete persisted job", loggerPkg.String("error", deleteErr.Error()))
 				}
 			}
 		}
@@ -208,24 +208,24 @@ func (q *WorkQueue) Worker(id int) {
 func (q *WorkQueue) AddJob(job Job) {
 	select {
 	case <-q.ctx.Done():
-		q.logger.Warn("attempting to add job to stopped queue", logger.String("queue", q.name))
+		q.logger.Warn("attempting to add job to stopped queue", loggerPkg.String("queue", q.name))
 		return
 	default:
 		// 持久化任务
 		if err := q.saveJob(job); err != nil {
-			q.logger.Error("failed to persist job", logger.String("error", err.Error()))
+			q.logger.Error("failed to persist job", loggerPkg.String("error", err.Error()))
 		}
 		q.jobQueue <- job
 	}
 }
 
 func (q *WorkQueue) Stop() {
-	q.logger.Info("stopping queue", logger.String("queue", q.name))
+	q.logger.Info("stopping queue", loggerPkg.String("queue", q.name))
 	q.cancelFunc()
 	close(q.jobQueue)
 	q.wg.Wait()
 	close(q.shutdownChan)
-	q.logger.Info("queue stopped", logger.String("queue", q.name))
+	q.logger.Info("queue stopped", loggerPkg.String("queue", q.name))
 }
 
 func GetQueue(name string) *WorkQueue {
@@ -234,7 +234,7 @@ func GetQueue(name string) *WorkQueue {
 	return queues[name]
 }
 
-func InitQueues(cfg *config.Config, logger logger.Logger) {
+func InitQueues(cfg *config.Config, logger loggerPkg.Logger) {
 	// Summary Service
 	summaryQueue := NewWorkQueue("SummaryServiceQueue", cfg.SummaryWorkerCount, cfg.SummaryQueueSize, logger)
 	summaryQueue.Start(cfg)
