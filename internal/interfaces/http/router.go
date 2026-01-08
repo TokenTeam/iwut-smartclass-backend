@@ -2,7 +2,6 @@ package http
 
 import (
 	"iwut-smartclass-backend/internal/interfaces/http/handlers"
-	"iwut-smartclass-backend/internal/interfaces/http/middleware"
 
 	"github.com/gin-gonic/gin"
 )

@@ -2,7 +2,6 @@ package course
 
 import (
 	"context"
-	"fmt"
 
 	"iwut-smartclass-backend/internal/domain/course"
 	"iwut-smartclass-backend/internal/domain/errors"

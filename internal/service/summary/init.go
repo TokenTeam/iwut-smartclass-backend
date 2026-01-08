@@ -2,8 +2,8 @@ package summary
 
 import (
 	"encoding/json"
-	"iwut-smartclass-backend/internal/config"
 	"iwut-smartclass-backend/internal/database"
+	"iwut-smartclass-backend/internal/infrastructure/config"
 	"iwut-smartclass-backend/internal/middleware"
 )
 

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"iwut-smartclass-backend/internal/application/course"
-	"iwut-smartclass-backend/internal/domain/course"
+	domainCourse "iwut-smartclass-backend/internal/domain/course"
 	"iwut-smartclass-backend/internal/domain/errors"
 	"iwut-smartclass-backend/internal/domain/summary"
 	"iwut-smartclass-backend/internal/infrastructure/external"
@@ -104,7 +104,7 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 		}
 
 		// 创建新课程实体
-		courseEntity = &course.Course{
+		courseEntity = &domainCourse.Course{
 			SubID:      subID,
 			CourseID:   courseID,
 			Name:       liveCourseData["name"].(string),
