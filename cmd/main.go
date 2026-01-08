@@ -83,7 +83,7 @@ func main() {
 	courseService := course.NewService(courseRepo, appLogger)
 
 	// 初始化工作队列
-	middleware.InitQueues(cfg)
+	middleware.InitQueues(cfg, appLogger)
 	summaryQueue := middleware.GetQueue("SummaryServiceQueue")
 
 	// 初始化处理器
