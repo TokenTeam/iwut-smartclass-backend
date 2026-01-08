@@ -33,7 +33,7 @@ type WorkQueue struct {
 	logger         loggerPkg.Logger     // 日志
 }
 
-type JobLoader func([]byte, *config.Config) (Job, error)
+type JobLoader func([]byte, *config.Config, loggerPkg.Logger) (Job, error)
 
 var (
 	queues        = make(map[string]*WorkQueue)
@@ -134,7 +134,7 @@ func (q *WorkQueue) Recover(cfg *config.Config) {
 			continue
 		}
 
-		job, err := loader(wrapper.Data, cfg)
+		job, err := loader(wrapper.Data, cfg, q.logger)
 		if err != nil {
 			q.logger.Error("failed to load job", loggerPkg.String("file", file.Name()), loggerPkg.String("error", err.Error()))
 			continue

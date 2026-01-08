@@ -78,6 +78,10 @@ func main() {
 	scheduleService := external.NewScheduleService(cfg, appLogger)
 	liveCourseService := external.NewLiveCourseService(cfg, appLogger)
 	videoAuthService := external.NewVideoAuthService(cfg, appLogger)
+	ffmpegService := external.NewFFmpegService(appLogger)
+	cosService, _ := external.NewCOSService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], cfg.BucketUrl, appLogger)
+	asrService, _ := external.NewASRService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], appLogger)
+	openaiService := external.NewOpenAIService(cfg, appLogger)
 
 	// 初始化应用服务
 	courseService := course.NewService(courseRepo, appLogger)
@@ -96,7 +100,19 @@ func main() {
 		videoAuthService,
 		appLogger,
 	)
-	summaryHandler := httpHandlers.NewSummaryHandler(appLogger, summaryQueue)
+	summaryHandler := httpHandlers.NewSummaryHandler(
+		appLogger,
+		summaryQueue,
+		courseService,
+		summaryRepo,
+		userService,
+		videoAuthService,
+		ffmpegService,
+		cosService,
+		asrService,
+		openaiService,
+		cfg,
+	)
 	healthHandler := httpHandlers.NewHealthHandler()
 
 	// 设置路由
