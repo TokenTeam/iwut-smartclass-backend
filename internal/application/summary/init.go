@@ -49,8 +49,14 @@ func init() {
 		ffmpegService := external.NewFFmpegService(appLogger)
 		
 		// COS和ASR服务需要根据配置创建
-		cosService, _ := external.NewCOSService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], cfg.BucketUrl, appLogger)
-		asrService, _ := external.NewASRService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], appLogger)
+		cosService, err := external.NewCOSService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], cfg.BucketUrl, appLogger)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create COS service: %w", err)
+		}
+		asrService, err := external.NewASRService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], appLogger)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create ASR service: %w", err)
+		}
 		openaiService := external.NewOpenAIService(cfg, appLogger)
 
 		return NewSummaryJob(

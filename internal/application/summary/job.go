@@ -216,6 +216,15 @@ func (j *SummaryJob) Execute() error {
 		_ = os.Remove(audioFilePath)
 	}
 
+	if j.Task == "new" && j.Asr != "" {
+		// 使用已有的ASR文本
+		asrText = j.Asr
+		if asrText == "" {
+			j.logger.Error("ASR text is empty")
+			return errors.NewInternalError("ASR text is empty", fmt.Errorf("ASR text is empty"))
+		}
+	}
+
 	if j.Task == "regenerate" {
 		// 初始化Summary行
 		_, err := j.summaryRepo.InitNewSummary(ctx, j.SubID, userInfo.Account)
@@ -253,7 +262,7 @@ func (j *SummaryJob) Execute() error {
 	}
 
 	// 保存摘要
-	if j.Task == "new" && j.Asr == "" {
+	if j.Task == "new" {
 		err = j.courseService.UpdateSummary(ctx, j.SubID, summaryText, j.config.OpenaiModel, token, userInfo.Account)
 		if err != nil {
 			j.logger.Error("failed to save summary", logger.String("error", err.Error()))

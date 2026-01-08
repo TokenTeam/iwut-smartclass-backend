@@ -79,8 +79,16 @@ func main() {
 	liveCourseService := external.NewLiveCourseService(cfg, appLogger)
 	videoAuthService := external.NewVideoAuthService(cfg, appLogger)
 	ffmpegService := external.NewFFmpegService(appLogger)
-	cosService, _ := external.NewCOSService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], cfg.BucketUrl, appLogger)
-	asrService, _ := external.NewASRService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], appLogger)
+	cosService, err := external.NewCOSService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], cfg.BucketUrl, appLogger)
+	if err != nil {
+		appLogger.Error("Failed to initialize COS service", logger.String("error", err.Error()))
+		return
+	}
+	asrService, err := external.NewASRService(cfg.TencentSecretId[0], cfg.TencentSecretKey[0], appLogger)
+	if err != nil {
+		appLogger.Error("Failed to initialize ASR service", logger.String("error", err.Error()))
+		return
+	}
 	openaiService := external.NewOpenAIService(cfg, appLogger)
 
 	// 初始化应用服务

@@ -76,6 +76,16 @@ func (s *UserService) GetUserInfo(token string) (*user.User, error) {
 		return nil, errors.NewExternalError("user service", err)
 	}
 
+	// 验证响应码
+	if response.Code != 0 {
+		msg := response.Message
+		if msg == "" {
+			msg = fmt.Sprintf("api returned error code: %d", response.Code)
+		}
+		s.logger.Error("api error", logger.String("code", fmt.Sprintf("%d", response.Code)), logger.String("message", msg))
+		return nil, errors.NewExternalError("user service", fmt.Errorf("api error: %s", msg))
+	}
+
 	return &user.User{
 		Account:  response.Params.Account,
 		ID:       response.Params.ID,
