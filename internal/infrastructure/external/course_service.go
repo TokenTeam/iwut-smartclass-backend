@@ -201,7 +201,18 @@ func (s *LiveCourseService) SearchLiveCourse(token string, subID, courseID int) 
 		return nil, errors.NewExternalError("live course service", err)
 	}
 
-	if result["code"].(float64) != 0 {
+	// 检查code字段
+	codeVal, codeExists := result["code"]
+	if !codeExists {
+		s.logger.Error("missing code field in response")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("missing code field in response"))
+	}
+	code, ok := codeVal.(float64)
+	if !ok {
+		s.logger.Error("invalid code type in response")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("invalid code type in response"))
+	}
+	if code != 0 {
 		msg := ""
 		if msgVal, ok := result["msg"].(string); ok {
 			msg = msgVal
@@ -210,24 +221,60 @@ func (s *LiveCourseService) SearchLiveCourse(token string, subID, courseID int) 
 		return nil, errors.NewExternalError("live course service", fmt.Errorf("api error: %s", msg))
 	}
 
-	list := result["list"].([]interface{})
+	// 检查list字段
+	listVal, listExists := result["list"]
+	if !listExists {
+		s.logger.Error("missing list field in response")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("missing list field in response"))
+	}
+	list, ok := listVal.([]interface{})
+	if !ok {
+		s.logger.Error("invalid list type in response")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("invalid list type in response"))
+	}
 	if len(list) == 0 {
 		s.logger.Error("no live courses found")
 		return nil, errors.NewNotFoundError("live course")
 	}
 
-	courseData := list[0].(map[string]interface{})
-	video := ""
-	if videoList, ok := courseData["video_list"].([]interface{}); ok && len(videoList) > 0 {
-		video = videoList[0].(map[string]interface{})["preview_url"].(string)
+	// 检查courseData
+	courseData, ok := list[0].(map[string]interface{})
+	if !ok {
+		s.logger.Error("invalid course data type in response")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("invalid course data type in response"))
 	}
 
-	courseBegin, err := strconv.ParseInt(courseData["course_begin"].(string), 10, 64)
+	// 安全提取video
+	video := ""
+	if videoListVal, ok := courseData["video_list"]; ok {
+		if videoList, ok := videoListVal.([]interface{}); ok && len(videoList) > 0 {
+			if firstVideo, ok := videoList[0].(map[string]interface{}); ok {
+				if previewURL, ok := firstVideo["preview_url"].(string); ok {
+					video = previewURL
+				}
+			}
+		}
+	}
+
+	// 安全提取course_begin
+	courseBeginStr, ok := courseData["course_begin"].(string)
+	if !ok {
+		s.logger.Error("missing or invalid course_begin field")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("missing or invalid course_begin field"))
+	}
+	courseBegin, err := strconv.ParseInt(courseBeginStr, 10, 64)
 	if err != nil {
 		s.logger.Error("failed to parse course_begin", logger.String("error", err.Error()))
 		return nil, errors.NewExternalError("live course service", err)
 	}
-	courseOver, err := strconv.ParseInt(courseData["course_over"].(string), 10, 64)
+
+	// 安全提取course_over
+	courseOverStr, ok := courseData["course_over"].(string)
+	if !ok {
+		s.logger.Error("missing or invalid course_over field")
+		return nil, errors.NewExternalError("live course service", fmt.Errorf("missing or invalid course_over field"))
+	}
+	courseOver, err := strconv.ParseInt(courseOverStr, 10, 64)
 	if err != nil {
 		s.logger.Error("failed to parse course_over", logger.String("error", err.Error()))
 		return nil, errors.NewExternalError("live course service", err)
@@ -235,13 +282,30 @@ func (s *LiveCourseService) SearchLiveCourse(token string, subID, courseID int) 
 
 	courseTime := fmt.Sprintf("%s-%s", time.Unix(courseBegin, 0).Format("15:04"), time.Unix(courseOver, 0).Format("15:04"))
 
+	// 安全提取其他字段
+	var resultCourseID, resultSubID int
+	if idVal, ok := courseData["id"]; ok {
+		if idFloat, ok := idVal.(float64); ok {
+			resultCourseID = int(idFloat)
+		}
+	}
+	if subIDVal, ok := courseData["sub_id"]; ok {
+		if subIDFloat, ok := subIDVal.(float64); ok {
+			resultSubID = int(subIDFloat)
+		}
+	}
+	name, _ := courseData["title"].(string)
+	teacher, _ := courseData["realname"].(string)
+	location, _ := courseData["room_name"].(string)
+	date, _ := courseData["sub_title"].(string)
+
 	return map[string]interface{}{
-		"course_id": courseData["id"],
-		"sub_id":    courseData["sub_id"],
-		"name":      courseData["title"],
-		"teacher":   courseData["realname"],
-		"location":  courseData["room_name"],
-		"date":      courseData["sub_title"],
+		"course_id": resultCourseID,
+		"sub_id":    resultSubID,
+		"name":      name,
+		"teacher":   teacher,
+		"location":  location,
+		"date":      date,
 		"time":      courseTime,
 		"video":     video,
 	}, nil

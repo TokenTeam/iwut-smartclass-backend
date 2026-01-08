@@ -103,16 +103,24 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 			return
 		}
 
+		// 安全提取字段
+		name, _ := liveCourseData["name"].(string)
+		teacher, _ := liveCourseData["teacher"].(string)
+		location, _ := liveCourseData["location"].(string)
+		date, _ := liveCourseData["date"].(string)
+		timeStr, _ := liveCourseData["time"].(string)
+		video, _ := liveCourseData["video"].(string)
+
 		// 创建新课程实体
 		courseEntity = &domainCourse.Course{
-			SubID:      subID,
-			CourseID:   courseID,
-			Name:       liveCourseData["name"].(string),
-			Teacher:    liveCourseData["teacher"].(string),
-			Location:   liveCourseData["location"].(string),
-			Date:       liveCourseData["date"].(string),
-			Time:       liveCourseData["time"].(string),
-			Video:      liveCourseData["video"].(string),
+			SubID:         subID,
+			CourseID:      courseID,
+			Name:          name,
+			Teacher:       teacher,
+			Location:      location,
+			Date:          date,
+			Time:          timeStr,
+			Video:         video,
 			SummaryStatus: "",
 			SummaryData:   "",
 			Model:          "",
@@ -134,7 +142,11 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 		}
 
 		// 更新视频链接
-		videoURL := liveCourseData["video"].(string)
+		videoURL, ok := liveCourseData["video"].(string)
+		if !ok || videoURL == "" {
+			c.Error(errors.NewExternalError("live course service", fmt.Errorf("missing or invalid video field")))
+			return
+		}
 		if err := h.courseService.UpdateVideo(ctx, subID, videoURL); err != nil {
 			c.Error(err)
 			return
@@ -195,7 +207,11 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 		timestamp := time.Now().Unix()
 		
 		// 计算MD5
-		parsedURL, _ := url.Parse(courseEntity.Video)
+		parsedURL, err := url.Parse(courseEntity.Video)
+		if err != nil {
+			c.Error(errors.NewInternalError("failed to parse video URL", err))
+			return
+		}
 		md5Input := fmt.Sprintf("%s%d%d%s%d", parsedURL.Path, userInfo.ID, userInfo.TenantID, reversedPhone, timestamp)
 		md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(md5Input)))
 		
