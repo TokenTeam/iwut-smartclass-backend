@@ -229,6 +229,10 @@ func (q *WorkQueue) Worker(id int) {
 
 			if err != nil {
 				q.logger.Error("job failed", loggerPkg.String("worker", workerName), loggerPkg.String("duration", duration.String()), loggerPkg.String("error", err.Error()))
+				// 删除失败任务的持久化文件，避免重复调用
+				if deleteErr := q.deleteJob(job); deleteErr != nil {
+					q.logger.Warn("failed to delete persisted job after failure", loggerPkg.String("error", deleteErr.Error()))
+				}
 			} else {
 				q.logger.Debug("job completed", loggerPkg.String("worker", workerName), loggerPkg.String("duration", duration.String()))
 				// 任务成功完成后删除持久化文件
