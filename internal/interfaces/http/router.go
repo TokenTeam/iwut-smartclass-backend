@@ -24,16 +24,18 @@ func SetupRouter(
 	// 健康检查
 	router.GET("/health", healthHandler.Health)
 
-	// API路由
-	api := router.Group("/api")
-	{
-		api.POST("/getCourse", courseHandler.GetCourse)
-		api.POST("/generateSummary", summaryHandler.GenerateSummary)
-	}
+	// 路由
+	router.POST("/getCourse", courseHandler.GetCourse)
+	router.POST("/generateSummary", summaryHandler.GenerateSummary)
 
 	// 根路径
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(403, gin.H{"code": 403, "msg": "Forbidden"})
+	})
+
+	// 未匹配路由返回 JSON 404
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(404, gin.H{"code": 404, "msg": "not found"})
 	})
 
 	return router
