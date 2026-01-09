@@ -3,6 +3,7 @@ package persistence
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"iwut-smartclass-backend/internal/domain/summary"
@@ -10,6 +11,8 @@ import (
 
 	"gorm.io/gorm"
 )
+
+const summaryTimeLayout = "2006-01-02 15:04:05"
 
 // SummaryRepository 摘要仓储实现
 type SummaryRepository struct {
@@ -31,10 +34,10 @@ func (r *SummaryRepository) FindBySubIDAndUser(ctx context.Context, subID int, u
 	defer cancel()
 
 	var results []struct {
-		Summary string
-		Model   string
-		Token   uint32
-		CreateAt time.Time
+		Summary     string
+		Model       string
+		Token       uint32
+		CreateAtRaw string `gorm:"column:create_at"`
 	}
 
 	err := r.db.WithContext(ctx).Table("summary").
@@ -49,13 +52,17 @@ func (r *SummaryRepository) FindBySubIDAndUser(ctx context.Context, subID int, u
 
 	summaries := make([]*summary.Summary, 0, len(results))
 	for _, result := range results {
+		createAt, parseErr := time.ParseInLocation(summaryTimeLayout, strings.TrimSpace(result.CreateAtRaw), time.Local)
+		if parseErr != nil {
+			r.logger.Warn("failed to parse create_at, using zero time", logger.String("error", parseErr.Error()), logger.String("value", result.CreateAtRaw))
+		}
 		summaries = append(summaries, &summary.Summary{
-			User:    user,
-			SubID:   subID,
-			CreateAt: result.CreateAt,
-			Summary: result.Summary,
-			Model:   result.Model,
-			Token:   result.Token,
+			User:     user,
+			SubID:    subID,
+			CreateAt: createAt,
+			Summary:  result.Summary,
+			Model:    result.Model,
+			Token:    result.Token,
 		})
 	}
 
@@ -67,13 +74,19 @@ func (r *SummaryRepository) Save(ctx context.Context, s *summary.Summary) error 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	createAt := s.CreateAt
+	if createAt.IsZero() {
+		createAt = time.Now()
+	}
+	createAtStr := createAt.Format(summaryTimeLayout)
+
 	err := r.db.WithContext(ctx).Table("summary").Create(map[string]interface{}{
-		"user":     s.User,
-		"sub_id":   s.SubID,
-		"create_at": s.CreateAt,
-		"summary":  s.Summary,
-		"model":    s.Model,
-		"token":    s.Token,
+		"user":      s.User,
+		"sub_id":    s.SubID,
+		"create_at": createAtStr,
+		"summary":   s.Summary,
+		"model":     s.Model,
+		"token":     s.Token,
 	}).Error
 
 	if err != nil {
@@ -89,8 +102,14 @@ func (r *SummaryRepository) Update(ctx context.Context, s *summary.Summary) erro
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
+	createAt := s.CreateAt
+	if createAt.IsZero() {
+		createAt = time.Now()
+	}
+	createAtStr := createAt.Format(summaryTimeLayout)
+
 	err := r.db.WithContext(ctx).Table("summary").
-		Where("sub_id = ? AND user = ? AND create_at = ?", s.SubID, s.User, s.CreateAt).
+		Where("sub_id = ? AND user = ? AND create_at = ?", s.SubID, s.User, createAtStr).
 		Updates(map[string]interface{}{
 			"summary": s.Summary,
 			"model":   s.Model,
@@ -111,6 +130,7 @@ func (r *SummaryRepository) InitNewSummary(ctx context.Context, subID int, user 
 	defer cancel()
 
 	now := time.Now()
+	createAtStr := now.Format(summaryTimeLayout)
 	s := &summary.Summary{
 		User:     user,
 		SubID:    subID,
@@ -121,12 +141,12 @@ func (r *SummaryRepository) InitNewSummary(ctx context.Context, subID int, user 
 	}
 
 	err := r.db.WithContext(ctx).Table("summary").Create(map[string]interface{}{
-		"user":     s.User,
-		"sub_id":   s.SubID,
-		"create_at": s.CreateAt,
-		"summary":  s.Summary,
-		"model":    s.Model,
-		"token":    s.Token,
+		"user":      s.User,
+		"sub_id":    s.SubID,
+		"create_at": createAtStr,
+		"summary":   s.Summary,
+		"model":     s.Model,
+		"token":     s.Token,
 	}).Error
 
 	if err != nil {
