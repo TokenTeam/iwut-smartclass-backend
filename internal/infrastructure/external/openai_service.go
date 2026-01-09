@@ -81,7 +81,7 @@ func (s *OpenAIService) CallOpenAI(prompt, userInput string) (string, uint32, er
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.cfg.OpenaiKey))
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 10 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		s.logger.Error("failed to send request", logger.String("error", err.Error()))
