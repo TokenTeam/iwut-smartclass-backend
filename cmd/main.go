@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"iwut-smartclass-backend/assets"
 	"iwut-smartclass-backend/internal/application/course"
@@ -26,8 +27,12 @@ func main() {
 	|_____/|_| |_| |_|\__,_|_|   \__| \_____|_|\__,_|___/___/
 	`)
 
+	// 解析命令行参数
+	configPath := flag.String("config", "", "path to .env file")
+	flag.Parse()
+
 	// 加载配置
-	cfg, err := config.LoadConfig()
+	cfg, err := config.LoadConfig(*configPath)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to load config: %v", err))
 	}

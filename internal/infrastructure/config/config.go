@@ -51,12 +51,16 @@ func DefaultConfig() *Config {
 	}
 }
 
-// LoadConfig 加载配置
-func LoadConfig() (*Config, error) {
+// LoadConfig 加载配置（可选指定 .env 路径）
+func LoadConfig(envPath string) (*Config, error) {
 	config := DefaultConfig()
 
 	// 从 .env 文件加载配置
-	_ = godotenv.Load()
+	if envPath != "" {
+		_ = godotenv.Load(envPath)
+	} else {
+		_ = godotenv.Load()
+	}
 
 	// 从环境变量加载
 	if err := LoadConfigFromEnv(config); err != nil {
