@@ -2,8 +2,10 @@ package summary
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
@@ -19,25 +21,25 @@ import (
 
 // SummaryJob 摘要生成任务
 type SummaryJob struct {
-	Token        string
-	SubID        int
-	Task         string
-	CourseID     int
-	CourseName   string
-	VideoURL     string
-	Asr          string
+	Token      string
+	SubID      int
+	Task       string
+	CourseID   int
+	CourseName string
+	VideoURL   string
+	Asr        string
 
 	// 依赖注入
-	courseService      *course.Service
-	summaryRepo        summary.Repository
-	userService        *external.UserService
-	videoAuthService   *external.VideoAuthService
-	ffmpegService      *external.FFmpegService
-	cosService         *external.COSService
-	asrService         *external.ASRService
-	openaiService      *external.OpenAIService
-	config             *config.Config
-	logger             logger.Logger
+	courseService    *course.Service
+	summaryRepo      summary.Repository
+	userService      *external.UserService
+	videoAuthService *external.VideoAuthService
+	ffmpegService    *external.FFmpegService
+	cosService       *external.COSService
+	asrService       *external.ASRService
+	openaiService    *external.OpenAIService
+	config           *config.Config
+	logger           logger.Logger
 }
 
 // NewSummaryJob 创建摘要任务
@@ -61,23 +63,23 @@ func NewSummaryJob(
 	logger logger.Logger,
 ) *SummaryJob {
 	return &SummaryJob{
-		Token:          token,
-		SubID:          subID,
-		Task:           task,
-		CourseID:       courseID,
-		CourseName:     courseName,
-		VideoURL:       videoURL,
-		Asr:            asr,
-		courseService:  courseService,
-		summaryRepo:    summaryRepo,
-		userService:    userService,
+		Token:            token,
+		SubID:            subID,
+		Task:             task,
+		CourseID:         courseID,
+		CourseName:       courseName,
+		VideoURL:         videoURL,
+		Asr:              asr,
+		courseService:    courseService,
+		summaryRepo:      summaryRepo,
+		userService:      userService,
 		videoAuthService: videoAuthService,
-		ffmpegService:  ffmpegService,
-		cosService:     cosService,
-		asrService:     asrService,
-		openaiService:  openaiService,
-		config:         cfg,
-		logger:         logger,
+		ffmpegService:    ffmpegService,
+		cosService:       cosService,
+		asrService:       asrService,
+		openaiService:    openaiService,
+		config:           cfg,
+		logger:           logger,
 	}
 }
 
@@ -134,7 +136,17 @@ func (j *SummaryJob) Execute() error {
 		}
 
 		// 拼接带密钥的视频链接
-		video := fmt.Sprintf("%s?auth_key=%s", j.VideoURL, authKey)
+		parsedURL, err := url.Parse(j.VideoURL)
+		if err != nil {
+			j.logger.Error("failed to parse video URL", logger.String("error", err.Error()))
+			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
+			return errors.NewInternalError("failed to parse video URL", err)
+		}
+		timestamp := time.Now().Unix()
+		md5Input := fmt.Sprintf("%s%d%d%s%d", parsedURL.Path, userInfo.ID, userInfo.TenantID, userInfo.ReversePhone(), timestamp)
+		md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(md5Input)))
+		videoAuth := fmt.Sprintf("auth_key=%s&t=%d-%d-%s", authKey, userInfo.ID, timestamp, md5Hash)
+		video := fmt.Sprintf("%s?%s", j.VideoURL, videoAuth)
 
 		// 检查是否已有音频ID
 		courseEntity, err := j.courseService.GetCourse(ctx, j.SubID)
@@ -277,7 +289,7 @@ func (j *SummaryJob) Execute() error {
 			j.logger.Error("failed to find summary", logger.String("error", err.Error()))
 			return errors.NewInternalError("failed to find summary", err)
 		}
-		
+
 		// 更新最新的摘要
 		summaryEntity := summaries[0]
 		summaryEntity.Summary = summaryText

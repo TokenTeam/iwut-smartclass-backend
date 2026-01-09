@@ -345,7 +345,8 @@ func (s *VideoAuthService) GetVideoAuthKey(token string, courseID, subID int) (s
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		s.logger.Error("received non-200 response", logger.String("status", fmt.Sprintf("%d", resp.StatusCode)))
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		s.logger.Error("received non-200 response", logger.String("status", fmt.Sprintf("%d", resp.StatusCode)), logger.String("body", string(bodyBytes)))
 		return "", errors.NewExternalError("video auth service", fmt.Errorf("status code: %d", resp.StatusCode))
 	}
 
