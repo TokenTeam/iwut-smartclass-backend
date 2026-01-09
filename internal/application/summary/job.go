@@ -158,36 +158,49 @@ func (j *SummaryJob) Execute() error {
 
 		audioID := courseEntity.AudioID
 		if audioID == "" {
-			// 将视频转换为音频
 			audioID = fmt.Sprintf("%d-%d", j.SubID, time.Now().Unix())
-			audioFileName := audioID + ".aac"
-			audioFilePath := filepath.Join("temp", "audio", audioFileName)
+		}
+		audioFileName := audioID + ".aac"
+		audioFilePath := filepath.Join("temp", "audio", audioFileName)
+		tmpAudioPath := fmt.Sprintf("%s.tmp-%d", audioFilePath, time.Now().UnixNano())
 
-			// 创建目录
-			if err := os.MkdirAll(filepath.Dir(audioFilePath), 0755); err != nil {
-				j.logger.Error("failed to create directory", logger.String("error", err.Error()))
-				_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
-				return errors.NewInternalError("failed to create directory", err)
-			}
+		// 创建目录并清理可能的残留文件
+		if err := os.MkdirAll(filepath.Dir(audioFilePath), 0755); err != nil {
+			j.logger.Error("failed to create directory", logger.String("error", err.Error()))
+			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
+			return errors.NewInternalError("failed to create directory", err)
+		}
+		_ = os.Remove(tmpAudioPath)
 
-			// 转换视频为音频
-			convertCtx, convertCancel := context.WithTimeout(ctx, 5*time.Minute)
-			err = j.ffmpegService.ConvertVideoToAudio(convertCtx, video, audioFilePath)
-			convertCancel()
-			if err != nil {
-				j.logger.Error("failed to convert video to audio", logger.String("error", err.Error()))
-				_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
-				return err
-			}
+		// 转换视频为音频，先写入临时文件避免并发干扰
+		convertCtx, convertCancel := context.WithTimeout(ctx, 5*time.Minute)
+		err = j.ffmpegService.ConvertVideoToAudio(convertCtx, video, tmpAudioPath)
+		convertCancel()
+		if err != nil {
+			_ = os.Remove(tmpAudioPath)
+			j.logger.Error("failed to convert video to audio", logger.String("error", err.Error()))
+			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
+			return err
+		}
 
-			// 保存音频ID
+		// 原子替换最终文件，避免其他线程读取半成品
+		_ = os.Remove(audioFilePath)
+		if err := os.Rename(tmpAudioPath, audioFilePath); err != nil {
+			j.logger.Error("failed to finalize audio file", logger.String("error", err.Error()))
+			_ = os.Remove(tmpAudioPath)
+			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
+			return errors.NewInternalError("failed to finalize audio file", err)
+		}
+
+		// 保存音频ID（仅首次持久化）
+		if courseEntity.AudioID == "" {
 			if err := j.courseService.UpdateAudioID(ctx, j.SubID, audioID); err != nil {
 				j.logger.Error("failed to save audio id", logger.String("error", err.Error()))
 			}
 		}
 
-		audioFileName := audioID + ".aac"
-		audioFilePath := filepath.Join("temp", "audio", audioFileName)
+		audioFileName = audioID + ".aac"
+		audioFilePath = filepath.Join("temp", "audio", audioFileName)
 
 		// 上传到 COS
 		err = j.cosService.UploadFile(audioFilePath, audioFileName)
