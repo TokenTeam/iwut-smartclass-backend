@@ -9,7 +9,6 @@ type Course struct {
 	Date          string `gorm:"column:date"`
 	Time          string `gorm:"column:time"`
 	Video         string `gorm:"column:video"`
-	AudioID       string `gorm:"column:audio_id"`
 	Asr           string `gorm:"column:asr;type:longtext"`
 	SummaryStatus string `gorm:"column:summary_status"`
 	SummaryData   string `gorm:"column:summary_data;type:longtext"`

@@ -9,17 +9,12 @@
 │       └── templates  # Templates
 ├── cmd                # Application entry point
 └── internal           # Internal application logic
-    ├── asr            # ASR with Tencent Cloud
-    ├── config         # Configuration files loading logic
-    ├── cos            # COS with Tencent Cloud
+    ├── application    # Application services
     ├── database       # Database related code
-    ├── handler        # HTTP handlers
-    ├── middleware     # Middleware
-    ├── router         # Route definitions
-    ├── service        # Business logic
-    │   ├── course     # Course related services
-    │   └── summary    # Summary related services
-    └── util           # Utilities
+    ├── domain         # Domain logic
+    ├── infrastructure # Infrastructure services
+    ├── interfaces     # Interface definitions
+    └── middleware     # Middleware
 ```
 
 ## Development
