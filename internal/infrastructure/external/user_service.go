@@ -63,6 +63,7 @@ func (s *UserService) GetUserInfo(token string) (*user.User, error) {
 	var response struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
+		Msg     string `json:"msg"`
 		Params  struct {
 			Account  string `json:"account"`
 			ID       int    `json:"id"`
@@ -76,9 +77,12 @@ func (s *UserService) GetUserInfo(token string) (*user.User, error) {
 		return nil, errors.NewExternalError("user service", err)
 	}
 
-	// 验证响应码
-	if response.Code != 0 {
+	// 接口有时返回 code=200/msg=查询成功，视为成功
+	if response.Code != http.StatusOK {
 		msg := response.Message
+		if msg == "" {
+			msg = response.Msg
+		}
 		if msg == "" {
 			msg = fmt.Sprintf("api returned error code: %d", response.Code)
 		}
@@ -86,10 +90,12 @@ func (s *UserService) GetUserInfo(token string) (*user.User, error) {
 		return nil, errors.NewExternalError("user service", fmt.Errorf("api error: %s", msg))
 	}
 
+	payload := response.Params
+
 	return &user.User{
-		Account:  response.Params.Account,
-		ID:       response.Params.ID,
-		Phone:    response.Params.Phone,
-		TenantID: response.Params.TenantID,
+		Account:  payload.Account,
+		ID:       payload.ID,
+		Phone:    payload.Phone,
+		TenantID: payload.TenantID,
 	}, nil
 }
