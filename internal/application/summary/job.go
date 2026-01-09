@@ -162,7 +162,7 @@ func (j *SummaryJob) Execute() error {
 		}
 		audioFileName := audioID + ".aac"
 		audioFilePath := filepath.Join("temp", "audio", audioFileName)
-		tmpAudioPath := fmt.Sprintf("%s.tmp-%d", audioFilePath, time.Now().UnixNano())
+		tmpAudioPath := audioFilePath + ".tmp.aac"
 
 		// 创建目录并清理可能的残留文件
 		if err := os.MkdirAll(filepath.Dir(audioFilePath), 0755); err != nil {
