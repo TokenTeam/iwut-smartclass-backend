@@ -21,13 +21,13 @@ import (
 
 // CourseHandler 课程处理器
 type CourseHandler struct {
-	courseService      *course.Service
-	summaryRepo        summary.Repository
-	userService        *external.UserService
-	scheduleService    *external.ScheduleService
-	liveCourseService  *external.LiveCourseService
-	videoAuthService   *external.VideoAuthService
-	logger             logger.Logger
+	courseService     *course.Service
+	summaryRepo       summary.Repository
+	userService       *external.UserService
+	scheduleService   *external.ScheduleService
+	liveCourseService *external.LiveCourseService
+	videoAuthService  *external.VideoAuthService
+	logger            logger.Logger
 }
 
 // NewCourseHandler 创建课程处理器
@@ -123,9 +123,9 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 			Video:         video,
 			SummaryStatus: "",
 			SummaryData:   "",
-			Model:          "",
-			Token:          0,
-			SummaryUser:    "",
+			Model:         "",
+			Token:         0,
+			SummaryUser:   "",
 		}
 
 		// 保存到数据库
@@ -182,8 +182,12 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 
 	// 如果用户有摘要，使用用户的摘要
 	if len(userSummaries) > 0 {
-		status := "generating"
-		if !userSummaries[0].IsEmpty() {
+		status := courseEntity.SummaryStatus
+		if userSummaries[0].IsEmpty() {
+			if status == "" {
+				status = ""
+			}
+		} else {
 			status = "finished"
 		}
 		response["summary"] = map[string]string{
@@ -205,7 +209,7 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 		// 生成视频认证参数
 		reversedPhone := userInfo.ReversePhone()
 		timestamp := time.Now().Unix()
-		
+
 		// 计算MD5
 		parsedURL, err := url.Parse(courseEntity.Video)
 		if err != nil {
@@ -214,7 +218,7 @@ func (h *CourseHandler) GetCourse(c *gin.Context) {
 		}
 		md5Input := fmt.Sprintf("%s%d%d%s%d", parsedURL.Path, userInfo.ID, userInfo.TenantID, reversedPhone, timestamp)
 		md5Hash := fmt.Sprintf("%x", md5.Sum([]byte(md5Input)))
-		
+
 		videoAuth := fmt.Sprintf("auth_key=%s&t=%d-%d-%s", authKey, userInfo.ID, timestamp, md5Hash)
 		response["video"] = fmt.Sprintf("%s?%s", courseEntity.Video, videoAuth)
 	}
