@@ -16,6 +16,4 @@ type Repository interface {
 	UpdateSummaryStatus(ctx context.Context, subID int, status string) error
 	// UpdateSummary 更新摘要数据
 	UpdateSummary(ctx context.Context, subID int, summary, model string, token uint32, user string) error
-	// UpdateAudioID 更新音频ID
-	UpdateAudioID(ctx context.Context, subID int, audioID string) error
 }

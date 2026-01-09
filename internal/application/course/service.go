@@ -76,12 +76,3 @@ func (s *Service) UpdateSummary(ctx context.Context, subID int, summary, model s
 	}
 	return nil
 }
-
-// UpdateAudioID 更新音频ID
-func (s *Service) UpdateAudioID(ctx context.Context, subID int, audioID string) error {
-	if err := s.courseRepo.UpdateAudioID(ctx, subID, audioID); err != nil {
-		s.logger.Error("failed to update audio_id", logger.String("error", err.Error()))
-		return errors.WrapError(err, "failed to update audio_id")
-	}
-	return nil
-}

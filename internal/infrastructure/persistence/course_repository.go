@@ -39,7 +39,6 @@ func (r *CourseRepository) FindBySubID(ctx context.Context, subID int) (*course.
 		Date          string
 		Time          string
 		Video         *string
-		AudioID      *string
 		Asr           *string
 		SummaryStatus *string
 		SummaryData   *string
@@ -74,9 +73,6 @@ func (r *CourseRepository) FindBySubID(ctx context.Context, subID int) (*course.
 	if result.Video != nil {
 		c.Video = *result.Video
 	}
-	if result.AudioID != nil {
-		c.AudioID = *result.AudioID
-	}
 	if result.Asr != nil {
 		c.Asr = *result.Asr
 	}
@@ -105,19 +101,19 @@ func (r *CourseRepository) Save(ctx context.Context, c *course.Course) error {
 	defer cancel()
 
 	err := r.db.WithContext(ctx).Table("course").Create(map[string]interface{}{
-		"sub_id":          c.SubID,
-		"course_id":       c.CourseID,
-		"name":            c.Name,
-		"teacher":         c.Teacher,
-		"location":        c.Location,
-		"date":            c.Date,
-		"time":            c.Time,
-		"video":           c.Video,
-		"summary_status":  c.SummaryStatus,
-		"summary_data":    c.SummaryData,
-		"model":           c.Model,
-		"token":           c.Token,
-		"summary_user":    c.SummaryUser,
+		"sub_id":         c.SubID,
+		"course_id":      c.CourseID,
+		"name":           c.Name,
+		"teacher":        c.Teacher,
+		"location":       c.Location,
+		"date":           c.Date,
+		"time":           c.Time,
+		"video":          c.Video,
+		"summary_status": c.SummaryStatus,
+		"summary_data":   c.SummaryData,
+		"model":          c.Model,
+		"token":          c.Token,
+		"summary_user":   c.SummaryUser,
 	}).Error
 
 	if err != nil {
@@ -196,23 +192,6 @@ func (r *CourseRepository) UpdateSummary(ctx context.Context, subID int, summary
 
 	if err != nil {
 		r.logger.Error("failed to update summary", logger.String("error", err.Error()))
-		return err
-	}
-
-	return nil
-}
-
-// UpdateAudioID 更新音频ID
-func (r *CourseRepository) UpdateAudioID(ctx context.Context, subID int, audioID string) error {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
-	err := r.db.WithContext(ctx).Table("course").
-		Where("sub_id = ?", subID).
-		Update("audio_id", audioID).Error
-
-	if err != nil {
-		r.logger.Error("failed to update audio_id", logger.String("error", err.Error()))
 		return err
 	}
 

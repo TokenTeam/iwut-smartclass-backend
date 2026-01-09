@@ -10,7 +10,6 @@ type Course struct {
 	Date          string
 	Time          string
 	Video         string
-	AudioID       string
 	Asr           string
 	SummaryStatus string
 	SummaryData   string

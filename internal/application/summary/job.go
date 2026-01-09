@@ -148,21 +148,11 @@ func (j *SummaryJob) Execute() error {
 		videoAuth := fmt.Sprintf("auth_key=%s&t=%d-%d-%s", authKey, userInfo.ID, timestamp, md5Hash)
 		video := fmt.Sprintf("%s?%s", j.VideoURL, videoAuth)
 
-		// 检查是否已有音频ID
-		courseEntity, err := j.courseService.GetCourse(ctx, j.SubID)
-		if err != nil {
-			j.logger.Error("failed to get course", logger.String("error", err.Error()))
-			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
-			return err
-		}
-
-		audioID := courseEntity.AudioID
-		if audioID == "" {
-			audioID = fmt.Sprintf("%d-%d", j.SubID, time.Now().Unix())
-		}
+		// 直接用 SubID 生成稳定文件名，避免数据库字段
+		audioID := fmt.Sprintf("%d", j.SubID)
 		audioFileName := audioID + ".aac"
 		audioFilePath := filepath.Join("temp", "audio", audioFileName)
-		tmpAudioPath := audioFilePath + ".tmp.aac"
+		tmpAudioPath := audioFilePath + ".tmp"
 
 		// 创建目录并清理可能的残留文件
 		if err := os.MkdirAll(filepath.Dir(audioFilePath), 0755); err != nil {
@@ -191,16 +181,6 @@ func (j *SummaryJob) Execute() error {
 			_ = j.courseService.UpdateSummaryStatus(ctx, j.SubID, "")
 			return errors.NewInternalError("failed to finalize audio file", err)
 		}
-
-		// 保存音频ID（仅首次持久化）
-		if courseEntity.AudioID == "" {
-			if err := j.courseService.UpdateAudioID(ctx, j.SubID, audioID); err != nil {
-				j.logger.Error("failed to save audio id", logger.String("error", err.Error()))
-			}
-		}
-
-		audioFileName = audioID + ".aac"
-		audioFilePath = filepath.Join("temp", "audio", audioFileName)
 
 		// 上传到 COS
 		err = j.cosService.UploadFile(audioFilePath, audioFileName)
