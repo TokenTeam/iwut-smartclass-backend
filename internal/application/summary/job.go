@@ -85,7 +85,7 @@ func NewSummaryJob(
 
 // GetID 获取任务ID
 func (j *SummaryJob) GetID() string {
-	return fmt.Sprintf("summary-%d-%d", j.SubID, time.Now().UnixNano())
+	return fmt.Sprintf("summary-%d", j.SubID)
 }
 
 // GetData 获取任务数据（用于序列化）

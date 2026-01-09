@@ -140,12 +140,33 @@ func (q *WorkQueue) Recover(cfg *config.Config) {
 			continue
 		}
 
+		if err := q.migrateJobFile(file.Name(), job); err != nil {
+			q.logger.Warn("failed to migrate job file", loggerPkg.String("file", file.Name()), loggerPkg.String("error", err.Error()))
+		}
+
 		q.jobQueue <- job
 		count++
 	}
 	if count > 0 {
 		q.logger.Info("recovered jobs", loggerPkg.String("count", fmt.Sprintf("%d", count)), loggerPkg.String("queue", q.name))
 	}
+}
+
+func (q *WorkQueue) migrateJobFile(oldFileName string, job Job) error {
+	newFileName := fmt.Sprintf("%s.json", job.GetID())
+	if oldFileName == newFileName {
+		return nil
+	}
+
+	if err := q.saveJob(job); err != nil {
+		return err
+	}
+
+	oldPath := filepath.Join(q.persistenceDir, oldFileName)
+	if err := os.Remove(oldPath); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (q *WorkQueue) saveJob(job Job) error {
@@ -163,7 +184,21 @@ func (q *WorkQueue) saveJob(job Job) error {
 
 func (q *WorkQueue) deleteJob(job Job) error {
 	filename := filepath.Join(q.persistenceDir, fmt.Sprintf("%s.json", job.GetID()))
-	return os.Remove(filename)
+	if err := os.Remove(filename); err != nil {
+		legacyPattern := filepath.Join(q.persistenceDir, fmt.Sprintf("%s-*.json", job.GetID()))
+		matches, _ := filepath.Glob(legacyPattern)
+		if len(matches) == 0 {
+			return err
+		}
+		var lastErr error
+		for _, path := range matches {
+			if rmErr := os.Remove(path); rmErr != nil {
+				lastErr = rmErr
+			}
+		}
+		return lastErr
+	}
+	return nil
 }
 
 func (q *WorkQueue) Worker(id int) {
