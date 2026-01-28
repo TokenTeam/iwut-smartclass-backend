@@ -22,6 +22,7 @@
       sudo docker rm ${CNB_REPO_NAME_LOWERCASE} || true
       sudo docker run -d --name ${CNB_REPO_NAME_LOWERCASE} \
         -p ${default_DOCKER_CONTAINER_PORT}:8080 \
+        --add-host=host.docker.internal:host-gateway \
         -e TZ="Asia/Shanghai" \
         -e DEBUG="${DEBUG}" \
         -e DATABASE="${DATABASE}" \
